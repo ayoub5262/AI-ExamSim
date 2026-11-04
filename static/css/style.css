@@ -1,0 +1,74 @@
+/* =========================================================================
+   AI-ExamSim Custom Styles & Animations
+   ========================================================================= */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Mode Selection Card States */
+.mode-card {
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+}
+
+.mode-card:hover {
+  transform: translateY(-1px);
+}
+
+.mode-card.active {
+  border-color: #4f46e5;
+  box-shadow: 0 10px 25px -5px rgba(79, 70, 229, 0.12), 0 4px 10px -6px rgba(79, 70, 229, 0.08);
+}
+
+/* Audio Waveform Visualizer Bars */
+.wave-bar {
+  width: 3px;
+  height: 5px;
+  border-radius: 9999px;
+  background-color: #cbd5e1;
+  transition: height 0.08s ease, background-color 0.15s ease;
+}
+
+#waveform-container.recording .wave-bar {
+  background-color: #4f46e5;
+}
+
+#waveform-container.speaking .wave-bar {
+  background-color: #6366f1;
+}
+
+/* Remove default marker on <details>/<summary> across browsers */
+details > summary {
+  list-style: none;
+}
+
+details > summary::-webkit-details-marker {
+  display: none;
+}
+
+/* Range Slider Track Polish */
+input[type="range"] {
+  height: 6px;
+  border-radius: 9999px;
+  background: #e2e8f0;
+  outline: none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  cursor: pointer;
+}
+

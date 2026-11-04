@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="de" class="h-full scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI-ExamSim · Mündliche Prüfungssimulation</title>
+
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+            mono: ['JetBrains Mono', 'Fira Code', 'monospace'],
+          },
+          colors: {
+            academic: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+              800: '#3730a3',
+              900: '#1e1b4b',
+            }
+          }
+        }
+      }
+    };
+  </script>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="/static/css/style.css" onerror="this.onerror=null;this.href='http://127.0.0.1:8000/static/css/style.css';" />
+</head>
+<body class="min-h-full bg-slate-50 text-slate-900 font-sans antialiased flex flex-col selection:bg-indigo-600 selection:text-white">
+
+  <!-- ===================================================================== -->
+  <!-- TOP NAVIGATION BAR                                                    -->
+  <!-- ===================================================================== -->
+  <header class="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-slate-200/80 shadow-xs">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+      <!-- Brand Identity -->
+      <div class="flex items-center gap-3 min-w-0">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-600 to-slate-900 flex items-center justify-center text-white shadow-sm shrink-0">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 14l9-5-9-5-9 5 9 5z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
+          </svg>
+        </div>
+        <div class="truncate">
+          <div class="flex items-center gap-2">
+            <span class="font-bold text-slate-900 tracking-tight text-base sm:text-lg">AI-ExamSim</span>
+            <span class="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700 border border-indigo-200/60">
+              Prüfungssimulator
+            </span>
+          </div>
+          <p class="text-xs text-slate-500 truncate">Lehrstuhl für Modellgestützte Analyse &amp; Optimierung</p>
+        </div>
+      </div>
+
+      <!-- Right Controls: Voice Selection, Auto-Play Toggle, Model Status -->
+      <div class="flex items-center gap-2 sm:gap-3 shrink-0">
+        <!-- Voice Selector -->
+        <div class="hidden md:flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200/70 transition rounded-lg px-2.5 py-1.5 border border-slate-200/80">
+          <svg class="w-4 h-4 text-slate-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+          </svg>
+          <select id="nav-voice-select" aria-label="Prüfer-Stimme auswählen" class="bg-transparent text-xs font-medium text-slate-700 focus:outline-none cursor-pointer">
+            <option value="de-DE-KillianNeural">Prof. Killian (DE)</option>
+            <option value="de-DE-ConradNeural">Prof. Conrad (DE)</option>
+            <option value="de-DE-KatjaNeural">Prof. Katja (DE)</option>
+            <option value="de-DE-AmalaNeural">Prof. Amala (DE)</option>
+          </select>
+        </div>
+
+        <!-- Global Audio Auto-Play Toggle -->
+        <button id="btn-global-mute" type="button" title="Sprachausgabe des Prüfers ein-/ausschalten"
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition cursor-pointer bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100">
+          <svg id="icon-sound-on" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+          </svg>
+          <svg id="icon-sound-off" class="w-4 h-4 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
+          </svg>
+          <span id="label-global-mute">Audio: Ein</span>
+        </button>
+
+        <!-- Model Indicator Pill -->
+        <div class="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-100 border border-slate-200/80 text-xs text-slate-600 font-mono" title="Aktives KI-Bewertungsmodell">
+          <span id="api-status-dot" class="w-2 h-2 rounded-full bg-emerald-500"></span>
+          <span id="nav-model-name">LLM bereit</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===================================================================== -->
+  <!-- GLOBAL ERROR / NOTIFICATION BANNER                                    -->
+  <!-- ===================================================================== -->
+  <div id="global-alert-container" class="max-w-5xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-4 empty:pt-0">
+    <div id="global-alert" class="hidden rounded-xl border p-4 shadow-sm transition-all">
+      <div class="flex items-start justify-between gap-3">
+        <div class="flex items-start gap-3">
+          <svg id="global-alert-icon" class="w-5 h-5 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+          <div>
+            <h4 id="global-alert-title" class="text-sm font-semibold">Hinweis</h4>
+            <p id="global-alert-message" class="text-xs sm:text-sm mt-0.5 leading-relaxed"></p>
+          </div>
+        </div>
+        <button id="btn-close-alert" type="button" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg cursor-pointer">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- MAIN WORKSPACE                                                        -->
+  <!-- ===================================================================== -->
+  <main class="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+
+    <!-- =================================================================== -->
+    <!-- VIEW 1: SETUP & MODE SELECTION SCREEN                               -->
+    <!-- =================================================================== -->
+    <section id="view-setup" class="space-y-8 animate-fade-in">
+
+      <!-- Hero Banner -->
+      <div class="bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 rounded-2xl p-6 sm:p-8 text-white shadow-lg border border-indigo-500/20 relative overflow-hidden">
+        <div class="relative z-10 max-w-3xl space-y-3">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/20 border border-indigo-400/30 text-indigo-200 text-xs font-semibold tracking-wide uppercase">
+            Interaktive Mündliche Prüfung · Informatik
+          </div>
+          <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
+            Bereit für Ihre mündliche Prüfung in <span class="text-indigo-300">Simulation &amp; Optimierung</span>?
+          </h1>
+          <p class="text-slate-300 text-sm sm:text-base leading-relaxed">
+            Der KI-Prüfer stellt Ihnen echte Prüfungsfragen per Sprachausgabe, hört Ihrer gesprochenen oder getippten Antwort zu (inklusive 3&nbsp;Sekunden Denkpausen-Toleranz) und bewertet Ihre Leistung nach dem offiziellen deutschen Universitäts-Notenschlüssel (1,0 bis 5,0).
+          </p>
+        </div>
+        <div class="mt-6 pt-5 border-t border-white/10 flex flex-wrap items-center gap-6 text-xs text-slate-300">
+          <div class="flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-indigo-400"></span>
+            <span><strong id="stat-total-questions" class="text-white">100</strong> Prüfungsfragen im Katalog</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+            <span><strong id="stat-total-topics" class="text-white">12</strong> Fachgebiete</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+            <span>Sofort-Feedback, Merksätze &amp; Markdown-Prüfungsprotokoll</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 1: Select Examination Mode -->
+      <div class="space-y-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-lg font-bold text-slate-900">1. Prüfungsmodus auswählen</h2>
+            <p class="text-xs sm:text-sm text-slate-500">Wählen Sie zwischen einer realistischen Gesamtprüfung, gezieltem Themen-Training oder einem Schnelldurchlauf.</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <!-- Mode Card 1: Realistic Simulation -->
+          <div id="card-mode-realistic" data-mode="realistic"
+            class="mode-card active group relative rounded-2xl bg-white p-6 border-2 border-indigo-600 shadow-sm hover:shadow-md transition-all cursor-pointer flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between gap-2 mb-4">
+                <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold bg-indigo-100 text-indigo-800">
+                  [1] Empfohlen
+                </span>
+                <div class="mode-check w-6 h-6 rounded-full bg-indigo-600 text-white flex items-center justify-center">
+                  <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+              </div>
+              <h3 class="text-base font-bold text-slate-900 group-hover:text-indigo-600 transition">
+                Realistische Prüfungssimulation
+              </h3>
+              <p class="text-xs text-slate-500 mt-1.5 leading-relaxed">
+                Zufällige Fragen werden gleichmäßig über diverse Themengebiete verteilt – wie in einer echten mündlichen Prüfung.
+              </p>
+            </div>
+
+            <div class="mt-6 pt-4 border-t border-slate-100 space-y-2" onclick="event.stopPropagation()">
+              <div class="flex items-center justify-between text-xs font-medium text-slate-700">
+                <label for="slider-realistic-count">Anzahl der Fragen:</label>
+                <span id="badge-realistic-count" class="px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 font-bold">5 Fragen</span>
+              </div>
+              <input id="slider-realistic-count" type="range" min="1" max="20" value="5"
+                class="w-full accent-indigo-600 cursor-pointer" />
+              <div class="flex justify-between text-[11px] text-slate-400">
+                <span>1 (Kurztest)</span>
+                <span>5 (Standard)</span>
+                <span>20 (Intensiv)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Mode Card 2: Topic-Specific Training -->
+          <div id="card-mode-topic" data-mode="topic"
+            class="mode-card group relative rounded-2xl bg-white p-6 border-2 border-slate-200 hover:border-indigo-300 shadow-sm hover:shadow-md transition-all cursor-pointer flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between gap-2 mb-4">
+                <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold bg-slate-100 text-slate-700">
+                  [2] Themen-Fokus
+                </span>
+                <div class="mode-check w-6 h-6 rounded-full border-2 border-slate-300 text-transparent flex items-center justify-center">
+                  <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+              </div>
+              <h3 class="text-base font-bold text-slate-900 group-hover:text-indigo-600 transition">
+                Themen-Training
+              </h3>
+              <p class="text-xs text-slate-500 mt-1.5 leading-relaxed">
+                Trainieren Sie gezielt ein einzelnes Fachgebiet (z.&nbsp;B. Ereignisdiskrete Simulation oder Nichtlineare Optimierung).
+              </p>
+            </div>
+
+            <div class="mt-6 pt-4 border-t border-slate-100 space-y-3" onclick="event.stopPropagation()">
+              <div class="space-y-1">
+                <label for="select-topic-name" class="block text-xs font-medium text-slate-700">Fachgebiet wählen:</label>
+                <select id="select-topic-name"
+                  class="w-full rounded-lg border border-slate-300 bg-slate-50 px-2.5 py-1.5 text-xs font-medium text-slate-800 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none">
+                  <option value="">Themen werden geladen...</option>
+                </select>
+              </div>
+              <div class="space-y-1">
+                <div class="flex items-center justify-between text-xs font-medium text-slate-700">
+                  <label for="slider-topic-count">Fragen aus Thema:</label>
+                  <span id="badge-topic-count" class="px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 font-bold">3 Fragen</span>
+                </div>
+                <input id="slider-topic-count" type="range" min="1" max="15" value="3"
+                  class="w-full accent-indigo-600 cursor-pointer" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Mode Card 3: Quick Run -->
+          <div id="card-mode-quick" data-mode="quick"
+            class="mode-card group relative rounded-2xl bg-white p-6 border-2 border-slate-200 hover:border-indigo-300 shadow-sm hover:shadow-md transition-all cursor-pointer flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between gap-2 mb-4">
+                <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold bg-slate-100 text-slate-700">
+                  [3] Schnelldurchlauf
+                </span>
+                <div class="mode-check w-6 h-6 rounded-full border-2 border-slate-300 text-transparent flex items-center justify-center">
+                  <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+              </div>
+              <h3 class="text-base font-bold text-slate-900 group-hover:text-indigo-600 transition">
+                Schnelldurchlauf
+              </h3>
+              <p class="text-xs text-slate-500 mt-1.5 leading-relaxed">
+                Prüft die ersten <em>N</em> Fragen des Katalogs in fester Reihenfolge – ideal für einen schnellen System- oder Wissenstest.
+              </p>
+            </div>
+
+            <div class="mt-6 pt-4 border-t border-slate-100 space-y-2" onclick="event.stopPropagation()">
+              <div class="flex items-center justify-between text-xs font-medium text-slate-700">
+                <label for="slider-quick-count">Erste N Fragen:</label>
+                <span id="badge-quick-count" class="px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 font-bold">3 Fragen</span>
+              </div>
+              <input id="slider-quick-count" type="range" min="1" max="20" value="3"
+                class="w-full accent-indigo-600 cursor-pointer" />
+              <div class="flex justify-between text-[11px] text-slate-400">
+                <span>1 Frage</span>
+                <span>3 (Standard)</span>
+                <span>20 Fragen</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2: Microphone & Sound Check -->
+      <div class="space-y-4">
+        <div>
+          <h2 class="text-lg font-bold text-slate-900">2. Mikrofon- &amp; Sound-Check (Optional)</h2>
+          <p class="text-xs sm:text-sm text-slate-500">Überprüfen Sie vorab Ihre Audio-Ein- und Ausgabe. Während der Prüfung steht Ihnen jederzeit auch die Texteingabe zur Verfügung.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <!-- Microphone Check Card -->
+          <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs flex flex-col justify-between gap-4">
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex items-start gap-3">
+                <div class="w-10 h-10 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center shrink-0">
+                  <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 10v2a7 7 0 01-14 0v-2M12 19v4m-4 0h8" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 class="text-sm font-bold text-slate-900">Mikrofon &amp; Spracherkennung</h3>
+                  <p id="mic-check-desc" class="text-xs text-slate-500 mt-0.5">
+                    Prüft Mikrofonberechtigung, Pegelausschlag und Browser-Spracherkennung (de-DE).
+                  </p>
+                </div>
+              </div>
+              <span id="badge-mic-status" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 shrink-0">
+                <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                Nicht geprüft
+              </span>
+            </div>
+
+            <!-- Live Mic Meter Bar -->
+            <div class="space-y-2">
+              <div class="h-2.5 w-full bg-slate-100 rounded-full overflow-hidden border border-slate-200/60">
+                <div id="mic-test-meter" class="h-full w-0 bg-gradient-to-r from-emerald-500 to-indigo-600 transition-all duration-75 rounded-full"></div>
+              </div>
+              <div class="flex items-center justify-between">
+                <span id="stt-engine-info" class="text-[11px] text-slate-400">Web Speech API + Tastatur-Fallback</span>
+                <button id="btn-test-mic" type="button"
+                  class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-900 text-white hover:bg-slate-800 transition cursor-pointer">
+                  <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span id="label-test-mic">Mikrofon testen</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sound Check Card -->
+          <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs flex flex-col justify-between gap-4">
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex items-start gap-3">
+                <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+                  <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 class="text-sm font-bold text-slate-900">Prüfer-Sprachausgabe (Edge-TTS)</h3>
+                  <p class="text-xs text-slate-500 mt-0.5">
+                    Natürliche deutsche Sprachsynthese für Fragen und Feedback des Professors.
+                  </p>
+                </div>
+              </div>
+              <span id="badge-tts-status" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 shrink-0">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                Bereit
+              </span>
+            </div>
+
+            <div class="flex items-center justify-between pt-2 border-t border-slate-100">
+              <label class="inline-flex items-center gap-2.5 cursor-pointer select-none">
+                <input id="chk-autoplay-tts" type="checkbox" checked class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 cursor-pointer" />
+                <span class="text-xs font-medium text-slate-700">Fragen &amp; Feedback automatisch vorlesen</span>
+              </label>
+
+              <button id="btn-test-tts" type="button"
+                class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 transition cursor-pointer">
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span id="label-test-tts">Sound-Check</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Start Exam Action Footer -->
+      <div class="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-3 text-center sm:text-left">
+          <div class="hidden sm:flex w-10 h-10 rounded-full bg-indigo-50 text-indigo-600 items-center justify-center font-bold text-sm shrink-0">
+            los
+          </div>
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-wider text-indigo-600">Gewählte Konfiguration</p>
+            <p id="setup-summary-text" class="text-sm sm:text-base font-bold text-slate-900">
+              Realistische Prüfungssimulation · 5 Fragen aus diversen Themen
+            </p>
+          </div>
+        </div>
+
+        <button id="btn-start-exam" type="button"
+          class="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-7 py-3.5 rounded-xl font-bold text-sm sm:text-base text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 shadow-md shadow-indigo-600/20 transition cursor-pointer">
+          <span>Mündliche Prüfung starten</span>
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+          </svg>
+        </button>
+      </div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- VIEW 2: ACTIVE EXAMINATION SCREEN                                   -->
+    <!-- =================================================================== -->
+    <section id="view-exam" class="hidden space-y-6 animate-fade-in">
+
+      <!-- Top Progress & Metadata Header -->
+      <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 shadow-xs space-y-3">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <div class="flex flex-wrap items-center gap-2">
+            <span id="exam-progress-label" class="inline-flex items-center px-3 py-1 rounded-lg text-xs font-bold bg-slate-900 text-white">
+              Frage 1 von 5
+            </span>
+            <span id="exam-topic-badge" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200/70">
+              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+              </svg>
+              <span id="exam-topic-text">Grundlagen</span>
+            </span>
+            <span id="exam-question-id" class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-mono font-medium bg-slate-100 text-slate-600">
+              ID #1
+            </span>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <span id="exam-running-score" class="text-xs font-semibold text-slate-600 bg-slate-100 px-2.5 py-1 rounded-lg">
+              Punkte: 0 / 0
+            </span>
+            <button id="btn-finish-early" type="button"
+              class="inline-flex items-center gap-1 text-xs font-semibold text-slate-500 hover:text-rose-600 px-2.5 py-1 rounded-lg hover:bg-rose-50 transition cursor-pointer"
+              title="Prüfung vorzeitig beenden oder bisherige Antworten auswerten">
+              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+              <span id="label-finish-early">Prüfung beenden</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+          <div id="exam-progress-bar" class="h-full bg-indigo-600 transition-all duration-500 rounded-full" style="width: 20%"></div>
+        </div>
+      </div>
+
+      <!-- Examiner Question Card -->
+      <div class="bg-white rounded-2xl p-6 sm:p-7 border border-slate-200 shadow-sm relative overflow-hidden">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-100">
+          <!-- Professor Identity & Speaking Avatar -->
+          <div class="flex items-center gap-3.5">
+            <div id="prof-avatar-wrapper" class="relative w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-600 to-slate-900 text-white flex items-center justify-center shadow-sm shrink-0">
+              <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+              <span id="prof-speaking-ring" class="hidden absolute -inset-1 rounded-2xl border-2 border-indigo-500 animate-ping opacity-60"></span>
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <h2 class="text-sm font-bold text-slate-900">Prüfer · Prof. Dr. KI-ExamSim</h2>
+              </div>
+              <p class="text-xs text-slate-500">Mündliche Prüfung · Simulation und Optimierung</p>
+            </div>
+          </div>
+
+          <!-- Live Examiner State Badge & Audio Controls -->
+          <div class="flex flex-wrap items-center gap-2">
+            <!-- Live State Pill -->
+            <div id="examiner-state-badge" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200">
+              <span id="examiner-state-dot" class="w-2 h-2 rounded-full bg-slate-400"></span>
+              <span id="examiner-state-text">Bereit für Ihre Antwort</span>
+            </div>
+
+            <!-- Replay Question Audio Button -->
+            <button id="btn-replay-question" type="button"
+              class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200/70 transition cursor-pointer"
+              title="Frage erneut vorlesen lassen">
+              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+              </svg>
+              <span>Frage vorlesen</span>
+            </button>
+
+            <button id="btn-stop-audio" type="button"
+              class="hidden inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200 transition cursor-pointer"
+              title="Sprachausgabe stoppen">
+              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" />
+              </svg>
+              <span>Stopp</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Question Text -->
+        <div class="pt-5">
+          <p class="text-xs font-bold uppercase tracking-wider text-indigo-600 mb-2">Prüfungsfrage</p>
+          <blockquote id="exam-question-text" class="text-lg sm:text-xl font-bold text-slate-900 leading-snug">
+            Frage wird geladen...
+          </blockquote>
+        </div>
+      </div>
+
+      <!-- Student Response Area (Dual Input: Voice + Text) -->
+      <div id="response-area-card" class="bg-white rounded-2xl p-6 sm:p-7 border border-slate-200 shadow-sm space-y-5">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div>
+            <h3 class="text-base font-bold text-slate-900">Ihre Antwort</h3>
+            <p class="text-xs text-slate-500">
+              Sprechen Sie per Mikrofon (Denkpausen bis 3&nbsp;Sekunden sind erlaubt) oder tippen/bearbeiten Sie Ihre Antwort im Textfeld.
+            </p>
+          </div>
+          <span class="text-[11px] font-medium text-slate-400">
+            Tipp: <kbd class="px-1.5 py-0.5 bg-slate-100 border border-slate-300 rounded text-slate-600 font-mono">Strg + Enter</kbd> zum Absenden
+          </span>
+        </div>
+
+        <!-- Voice Recording Control Bar & Waveform Visualizer -->
+        <div id="voice-control-panel" class="rounded-xl bg-slate-50 border border-slate-200/90 p-4 space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <!-- Primary Voice Action Buttons: Start/Stop, Pause/Resume, Redo, Send -->
+            <div class="flex flex-wrap items-center gap-2">
+              <!-- Start / Stop Toggle -->
+              <button id="btn-record-toggle" type="button"
+                class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm bg-slate-900 text-white hover:bg-indigo-600 transition shadow-xs cursor-pointer">
+                <span id="record-btn-dot" class="w-2.5 h-2.5 rounded-full bg-rose-500"></span>
+                <span id="record-btn-label">Sprachaufnahme starten</span>
+              </button>
+
+              <!-- Pause / Resume Button -->
+              <button id="btn-voice-pause" type="button" disabled
+                class="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl font-semibold text-xs sm:text-sm bg-white text-slate-700 border border-slate-300 hover:bg-amber-50 hover:text-amber-800 hover:border-amber-300 disabled:opacity-40 disabled:pointer-events-none transition shadow-2xs cursor-pointer"
+                title="Sprachaufnahme pausieren oder fortsetzen">
+                <svg id="icon-voice-pause" class="w-4 h-4 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span id="label-voice-pause">Pause</span>
+              </button>
+
+              <!-- Redo / Re-record Button -->
+              <button id="btn-voice-redo" type="button" disabled
+                class="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl font-semibold text-xs sm:text-sm bg-white text-slate-700 border border-slate-300 hover:bg-rose-50 hover:text-rose-700 hover:border-rose-300 disabled:opacity-40 disabled:pointer-events-none transition shadow-2xs cursor-pointer"
+                title="Bisherige Aufnahme verwerfen und neu sprechen">
+                <svg class="w-4 h-4 text-rose-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                <span>Neu (Redo)</span>
+              </button>
+
+              <!-- Direct Send Button -->
+              <button id="btn-voice-send" type="button" disabled
+                class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-40 disabled:pointer-events-none transition shadow-xs cursor-pointer"
+                title="Aufnahme beenden und Antwort sofort zur Bewertung absenden">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+                <span>Senden</span>
+              </button>
+            </div>
+
+            <!-- Right Group: Live Timer & Waveform Visualizer Bars -->
+            <div class="flex items-center gap-2.5">
+              <!-- Live Timer -->
+              <div class="flex items-center gap-1.5 font-mono text-xs font-semibold text-slate-600 bg-white px-3 py-2 rounded-lg border border-slate-200">
+                <svg class="w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span id="recording-timer">00:00</span>
+                <span class="text-slate-300">/</span>
+                <span class="text-slate-400">03:00</span>
+              </div>
+
+              <!-- Waveform Visualizer Bars -->
+              <div id="waveform-container" class="flex items-center gap-1 h-8 px-3 bg-white rounded-lg border border-slate-200 overflow-hidden" aria-hidden="true">
+                <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
+                <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
+                <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
+                <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
+                <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Interim Speech / Pause Tolerance Status Bar -->
+          <div id="speech-live-status" class="hidden text-xs text-slate-600 bg-white/80 rounded-lg px-3 py-2 border border-slate-200/70 flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2 truncate">
+              <span id="speech-status-indicator" class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
+              <span id="speech-interim-text" class="italic text-slate-600 truncate">Mikrofon aktiv – bitte sprechen Sie...</span>
+            </div>
+            <span id="pause-tolerance-pill" class="hidden shrink-0 px-2 py-0.5 rounded bg-amber-100 text-amber-800 font-semibold text-[11px]">
+              Denkpause (3s Toleranz aktiv)
+            </span>
+          </div>
+        </div>
+
+        <!-- Textarea Input / Editable Transcript -->
+        <div class="space-y-2">
+          <div class="flex items-center justify-between">
+            <label for="student-answer-input" class="text-xs font-semibold text-slate-700">
+              Antworttext (Sprach-Transkription oder direkte Texteingabe):
+            </label>
+            <div class="flex items-center gap-3">
+              <span id="answer-word-count" class="text-xs text-slate-400 font-mono">0 Wörter</span>
+              <button id="btn-clear-answer" type="button" class="hidden text-xs text-slate-400 hover:text-rose-600 transition cursor-pointer">
+                Text leeren
+              </button>
+            </div>
+          </div>
+
+          <textarea id="student-answer-input" rows="4"
+            placeholder="Sprechen Sie per Mikrofon oder tippen Sie Ihre Antwort hier ein..."
+            class="w-full rounded-xl border border-slate-300 bg-white p-4 text-sm sm:text-base text-slate-900 placeholder:text-slate-400 focus:border-indigo-600 focus:ring-3 focus:ring-indigo-500/15 focus:outline-none transition resize-y leading-relaxed"></textarea>
+
+          <!-- Short Answer Safety Warning (<= 3 words) -->
+          <div id="short-answer-warning" class="hidden rounded-xl bg-amber-50 border border-amber-200 p-3.5 text-xs text-amber-900 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div class="flex items-start gap-2.5">
+              <svg class="w-4 h-4 text-amber-600 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              <span>
+                <strong>Hinweis:</strong> Ihre Antwort ist sehr kurz (nur 1–3 Wörter). Haben Sie noch überlegt? Sie können die Antwort jetzt noch ergänzen oder direkt absenden.
+              </span>
+            </div>
+            <button id="btn-confirm-short-submit" type="button"
+              class="shrink-0 px-3 py-1.5 rounded-lg font-bold bg-amber-600 text-white hover:bg-amber-700 transition cursor-pointer">
+              Trotzdem absenden
+            </button>
+          </div>
+        </div>
+
+        <!-- Submission Controls -->
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-2 border-t border-slate-100">
+          <button id="btn-skip-question" type="button"
+            class="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition cursor-pointer">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+            </svg>
+            <span>Nicht beantworten / Überspringen (0 Pkt.)</span>
+          </button>
+
+          <button id="btn-submit-answer" type="button" disabled
+            class="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold text-sm text-white bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed shadow-sm transition cursor-pointer">
+            <span id="submit-btn-label">Antwort bewerten lassen</span>
+            <svg id="submit-btn-icon" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- ================================================================= -->
+      <!-- EVALUATION LOADING PROGRESS BANNER                                -->
+      <!-- ================================================================= -->
+      <div id="eval-loading-banner" class="hidden bg-white rounded-2xl p-5 sm:p-6 border-2 border-indigo-200 shadow-sm space-y-3 animate-fade-in">
+        <div class="flex items-center justify-between gap-3">
+          <div class="flex items-center gap-3">
+            <span class="w-3 h-3 rounded-full bg-indigo-600 animate-ping shrink-0"></span>
+            <span id="eval-loading-text" class="text-sm font-bold text-slate-800">
+              KI-Prüfer wertet Ihre Antwort anhand der Musterlösung aus...
+            </span>
+          </div>
+          <span id="eval-loading-pct" class="text-xs font-mono font-bold text-indigo-600">0%</span>
+        </div>
+        <div class="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
+          <div id="eval-loading-bar" class="h-full bg-gradient-to-r from-indigo-500 to-purple-600 transition-all duration-300 rounded-full" style="width: 10%"></div>
+        </div>
+      </div>
+
+      <!-- ================================================================= -->
+      <!-- FEEDBACK CARD (Shown after evaluation)                            -->
+      <!-- ================================================================= -->
+      <div id="feedback-card" class="hidden bg-white rounded-2xl border-2 border-indigo-100 shadow-md overflow-hidden animate-fade-in">
+        <!-- Feedback Header Bar -->
+        <div class="p-5 sm:p-6 bg-slate-50/80 border-b border-slate-200/80 flex flex-wrap items-center justify-between gap-4">
+          <div class="flex flex-wrap items-center gap-3">
+            <!-- Score Pill (Green 7-10, Amber 5-6, Red 0-4) -->
+            <span id="feedback-score-pill" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-sm font-extrabold border">
+              8 / 10 Punkte
+            </span>
+
+            <!-- Status Tag (Passed, Partial, Failed) -->
+            <span id="feedback-status-tag" class="inline-flex items-center px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wider">
+              Bestanden
+            </span>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button id="btn-replay-feedback" type="button"
+              class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-white text-slate-700 hover:bg-slate-100 border border-slate-200 transition cursor-pointer">
+              <svg class="w-3.5 h-3.5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+              </svg>
+              <span>Feedback anhören</span>
+            </button>
+
+            <button id="btn-retry-eval" type="button"
+              class="hidden inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-50 text-amber-800 hover:bg-amber-100 border border-amber-200 transition cursor-pointer">
+              <span>Erneut bewerten</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Feedback Body -->
+        <div class="p-6 sm:p-7 space-y-5">
+          <!-- Spoken Feedback Quote -->
+          <div class="space-y-1.5">
+            <p class="text-xs font-bold uppercase tracking-wider text-slate-400">Kommentar des Prüfers</p>
+            <div class="p-4 rounded-xl bg-indigo-50/50 border border-indigo-100 text-slate-800 text-sm sm:text-base leading-relaxed font-medium">
+              „<span id="feedback-spoken-text"></span>“
+            </div>
+          </div>
+
+          <!-- Collapsible Missing Concepts & Takeaway Rule (Merksatz) -->
+          <details id="details-feedback-insights" open class="group rounded-xl border border-slate-200 bg-slate-50/60 overflow-hidden">
+            <summary class="flex items-center justify-between px-4 py-3 cursor-pointer select-none font-semibold text-xs sm:text-sm text-slate-800 hover:bg-slate-100/80 transition">
+              <span class="flex items-center gap-2">
+                <svg class="w-4 h-4 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>Fehlende Konzepte &amp; Merksatz (Takeaway Rule)</span>
+              </span>
+              <svg class="w-4 h-4 text-slate-500 transition-transform group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
+            </summary>
+
+            <div class="p-4 pt-2 border-t border-slate-200/70 grid grid-cols-1 md:grid-cols-2 gap-4 text-xs sm:text-sm">
+              <!-- Missing Aspects -->
+              <div class="bg-white rounded-lg p-3.5 border border-slate-200/80 space-y-1">
+                <p class="text-xs font-bold uppercase tracking-wider text-amber-700 flex items-center gap-1.5">
+                  <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                  <span>Fehlende Aspekte</span>
+                </p>
+                <p id="feedback-missing-text" class="text-slate-700 leading-relaxed"></p>
+              </div>
+
+              <!-- Takeaway Rule (Merksatz) -->
+              <div class="bg-white rounded-lg p-3.5 border border-indigo-200/80 space-y-1">
+                <p class="text-xs font-bold uppercase tracking-wider text-indigo-700 flex items-center gap-1.5">
+                  <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                  </svg>
+                  <span>Merksatz (Takeaway Rule)</span>
+                </p>
+                <p id="feedback-merksatz-text" class="text-slate-800 font-medium italic leading-relaxed"></p>
+              </div>
+            </div>
+          </details>
+
+          <!-- Collapsible Reference Solution (Musterlösung) -->
+          <details class="group rounded-xl border border-slate-200 bg-white overflow-hidden">
+            <summary class="flex items-center justify-between px-4 py-3 cursor-pointer select-none font-semibold text-xs sm:text-sm text-slate-700 hover:bg-slate-50 transition">
+              <span class="flex items-center gap-2">
+                <svg class="w-4 h-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>Offizielle Musterlösung vergleichen</span>
+              </span>
+              <svg class="w-4 h-4 text-slate-500 transition-transform group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
+            </summary>
+            <div class="p-4 pt-3 border-t border-slate-100 text-xs sm:text-sm text-slate-700 leading-relaxed bg-emerald-50/30">
+              <p id="feedback-musterloesung-text"></p>
+            </div>
+          </details>
+
+          <!-- Next Question CTA -->
+          <div class="pt-2 flex justify-end">
+            <button id="btn-next-question" type="button"
+              class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-bold text-sm text-white bg-slate-900 hover:bg-indigo-600 shadow-sm transition cursor-pointer">
+              <span id="next-question-label">Nächste Frage</span>
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- VIEW 3: FINAL RESULTS & ANALYTICS DASHBOARD                         -->
+    <!-- =================================================================== -->
+    <section id="view-results" class="hidden space-y-8 animate-fade-in">
+
+      <!-- Official German Grade Hero Banner -->
+      <div id="results-hero-banner" class="rounded-2xl p-6 sm:p-8 text-white shadow-lg relative overflow-hidden bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 border border-indigo-500/30">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div class="space-y-2 max-w-2xl">
+            <div class="flex flex-wrap items-center gap-2">
+              <span id="results-pass-badge" class="inline-flex items-center px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
+                Bestanden
+              </span>
+              <span id="results-mode-badge" class="text-xs text-slate-300 font-medium">
+                Realistische Prüfung
+              </span>
+              <span class="text-slate-500">·</span>
+              <span id="results-timestamp" class="text-xs text-slate-400 font-mono"></span>
+            </div>
+
+            <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight">
+              Prüfungsergebnis &amp; Endnote
+            </h1>
+
+            <p id="results-closing-remarks" class="text-sm sm:text-base text-slate-200 leading-relaxed">
+              Herzlichen Glückwunsch! Sie haben die Prüfung erfolgreich abgeschlossen.
+            </p>
+
+            <div class="pt-2">
+              <button id="btn-replay-closing" type="button"
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-white/10 hover:bg-white/20 text-white border border-white/15 transition cursor-pointer">
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                </svg>
+                <span>Schlusswort des Prüfers anhören</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Official Grade Box -->
+          <div class="bg-white/10 backdrop-blur-md rounded-2xl p-5 sm:p-6 border border-white/15 text-center min-w-[200px] shrink-0">
+            <p class="text-xs font-bold uppercase tracking-wider text-indigo-200">Offizielle Endnote</p>
+            <p id="results-grade-number" class="text-4xl sm:text-5xl font-black text-white mt-1 tracking-tight">1,3</p>
+            <p id="results-grade-label" class="text-sm font-bold text-indigo-200 mt-1">Sehr gut (1,3)</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Summary Metrics Row -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs">
+          <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Gesamtpunktzahl</p>
+          <p id="metric-total-score" class="text-2xl font-extrabold text-slate-900 mt-1">0 / 0 Punkte</p>
+          <p class="text-xs text-slate-500 mt-1">Bis zu 10 Punkte je Frage</p>
+        </div>
+
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs">
+          <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Erreichter Prozentwert</p>
+          <p id="metric-percentage" class="text-2xl font-extrabold text-indigo-600 mt-1">0,0 %</p>
+          <p class="text-xs text-slate-500 mt-1">Bestehensgrenze ab 50,0 % (Note 4,0)</p>
+        </div>
+
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs">
+          <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Beantwortete Fragen</p>
+          <p id="metric-questions-answered" class="text-2xl font-extrabold text-slate-900 mt-1">0 / 0</p>
+          <p id="metric-avg-points" class="text-xs text-slate-500 mt-1">Durchschnitt: 0,0 / 10 Pkt.</p>
+        </div>
+      </div>
+
+      <!-- Topic Analytics: Strengths, Weaknesses & Breakdown -->
+      <div class="bg-white rounded-2xl p-6 sm:p-7 border border-slate-200 shadow-xs space-y-6">
+        <div>
+          <h2 class="text-lg font-bold text-slate-900">Themen-Analyse &amp; Kompetenzprofil</h2>
+          <p class="text-xs sm:text-sm text-slate-500">
+            Automatische Einordnung Ihrer Ergebnisse nach Fachgebieten (Stärken ab Ø 7,5/10 Pkt. · Wiederholungsbedarf bis Ø 5,0/10 Pkt.).
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Verified Strengths (>= 7.5/10) -->
+          <div class="rounded-xl bg-emerald-50/60 border border-emerald-200 p-4 space-y-2">
+            <div class="flex items-center gap-2 text-emerald-800 font-bold text-sm">
+              <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span>Verifizierte Stärken (&ge; 7,5 / 10)</span>
+            </div>
+            <div id="results-strengths-list" class="flex flex-wrap gap-2 pt-1"></div>
+          </div>
+
+          <!-- Areas for Review (<= 5.0/10) -->
+          <div class="rounded-xl bg-rose-50/60 border border-rose-200 p-4 space-y-2">
+            <div class="flex items-center gap-2 text-rose-900 font-bold text-sm">
+              <svg class="w-4 h-4 text-rose-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              <span>Bereiche mit Nachholbedarf (&le; 5,0 / 10)</span>
+            </div>
+            <div id="results-weaknesses-list" class="flex flex-wrap gap-2 pt-1"></div>
+          </div>
+        </div>
+
+        <!-- Per-Topic Score Bars -->
+        <div id="results-topic-bars" class="space-y-3 pt-2 border-t border-slate-100"></div>
+      </div>
+
+      <!-- Collapsible Full Q&A Transcript -->
+      <div class="bg-white rounded-2xl p-6 sm:p-7 border border-slate-200 shadow-xs space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <h2 class="text-lg font-bold text-slate-900">Vollständiges Prüfungsprotokoll (Fragenverlauf)</h2>
+            <p class="text-xs sm:text-sm text-slate-500">Alle gestellten Fragen, Ihre Antworten, Musterlösungen und Detailbewertungen im Überblick.</p>
+          </div>
+          <button id="btn-toggle-all-transcript" type="button"
+            class="text-xs font-semibold text-indigo-600 hover:text-indigo-800 px-3 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 transition cursor-pointer">
+            Alle aufklappen
+          </button>
+        </div>
+
+        <div id="results-transcript-list" class="space-y-3"></div>
+      </div>
+
+      <!-- Action Footer: Download Markdown Protocol & Start New Exam -->
+      <div class="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+        <a id="btn-download-protocol" href="#" download
+          class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-bold text-sm text-slate-800 bg-slate-100 hover:bg-slate-200 border border-slate-300 transition cursor-pointer">
+          <svg class="w-4 h-4 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+          </svg>
+          <span id="label-download-protocol">Markdown-Protokoll herunterladen (.md)</span>
+        </a>
+
+        <button id="btn-new-exam" type="button"
+          class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold text-sm text-white bg-indigo-600 hover:bg-indigo-700 shadow-sm transition cursor-pointer">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+          <span>Neue Prüfung starten</span>
+        </button>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ===================================================================== -->
+  <!-- FOOTER                                                                -->
+  <!-- ===================================================================== -->
+  <footer class="border-t border-slate-200/80 bg-white py-4 mt-12">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-400">
+      <span>AI-ExamSim · Interaktive Mündliche Prüfungssimulation (FastAPI &amp; KI:Connect NRW)</span>
+      <span>Offizielle deutsche Hochschul-Notenskala (1,0 – 5,0)</span>
+    </div>
+  </footer>
+
+  <!-- Frontend Application Controller -->
+  <script src="/static/js/app.js" onerror="var s=document.createElement('script');s.src='http://127.0.0.1:8000/static/js/app.js';document.body.appendChild(s);"></script>
+</body>
+</html>
+
