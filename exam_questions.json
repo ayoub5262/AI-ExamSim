@@ -1,0 +1,602 @@
+[
+  {
+    "id": 1,
+    "thema": "Grundlagen",
+    "frage": "Erläutern Sie die Begriffe System, Modell und Simulation.",
+    "musterloesung": "Ein System ist eine Menge interagierender Teile mit einer Struktur und Systemgrenze. Ein Modell ist ein abstrahiertes Ersatzsystem zur Durchführung von Experimenten. Simulation bezeichnet das Experimentieren mit diesem Modell, um das Verhalten unter verschiedenen Bedingungen zu untersuchen."
+  },
+  {
+    "id": 2,
+    "thema": "Ereignisdiskrete Simulation",
+    "frage": "Können Sie den Ansatz des Event Schedulings erläutern?",
+    "musterloesung": "Ein Event Scheduling-Simulator besteht aus Zuständen, einer dynamischen und statischen Struktur, einer zentralen Ereignisliste, Ereignisroutinen und einer Simulationshauptroutine. Die Ereignisliste verwaltet Ereignisse nach ihrem geplanten Zeitpunkt, während Ereignisroutinen die Aktionen bei jedem Ereignis definieren."
+  },
+  {
+    "id": 3,
+    "thema": "Ereignisdiskrete Simulation",
+    "frage": "Was wäre ein Beispiel für das Löschen eines Ereignisses? Wofür braucht man das?",
+    "musterloesung": "Ein Beispiel ist die Stornierung einer Bestellung oder Ressourcenfreigabe. Man braucht es, um Ressourcen freizugeben, die korrekte Simulation des realen Prozesses (z.B. Abbruch) sicherzustellen und die Effizienz zu steigern."
+  },
+  {
+    "id": 4,
+    "thema": "Eingabedatenmodellierung",
+    "frage": "Wie geht man bei der Modellierung von Eingabedaten vor?",
+    "musterloesung": "Zunächst Daten erheben (am System oder ähnlich). Dann ermitteln, wie die zufälligen Eingaben verteilt sind (deterministisch, diskret empirisch, kontinuierlich empirisch, stochastisch). Bei stochastisch: Verteilungstyp wählen, Parameter schätzen (z.B. Momenten- oder ML-Methode) und Passgüte durch Anpassungstests überprüfen."
+  },
+  {
+    "id": 5,
+    "thema": "Eingabedatenmodellierung",
+    "frage": "Können Sie die Momenten-Methode erklären?",
+    "musterloesung": "Die Methode vergleicht die Momente der theoretischen Verteilung mit den Momenten der empirischen Daten. Die Parameter der Verteilung werden so gewählt, dass diese Momente übereinstimmen. Die Schätzer sind asymptotisch erwartungstreu und konsistent."
+  },
+  {
+    "id": 6,
+    "thema": "Eingabedatenmodellierung",
+    "frage": "Können Sie die Likelihood-Funktion aufschreiben und erklären?",
+    "musterloesung": "Die Likelihood-Funktion zeigt, wie wahrscheinlich es ist, dass bestimmte Parameter die beobachteten Daten erklären. Der Maximum-Likelihood-Schätzer (ML-Schätzer) maximiert diese Wahrscheinlichkeit. Durch Ableiten und Nullsetzen der Ableitung der Log-Likelihood-Funktion findet man den ML-Schätzer."
+  },
+  {
+    "id": 7,
+    "thema": "Eingabedatenmodellierung",
+    "frage": "Wieso kann man bei der Likelihood-Funktion den Logarithmus verwenden und wozu macht man das?",
+    "musterloesung": "Man verwendet den Logarithmus, weil die Extremstellen der Funktion gleichbleiben und die Ableitung wesentlich einfacher ist, da man über die Summe von Funktionen statt über ein Produkt von Funktionen ableitet."
+  },
+  {
+    "id": 8,
+    "thema": "Eingabedatenmodellierung",
+    "frage": "Wie testet man, ob die Verteilung adäquat für die Modellierung der Stichprobe ist?",
+    "musterloesung": "Im letzten Schritt prüft man mit Anpassungstests wie dem Chi-Quadrat-Test und dem Kolmogorov-Smirnov-Test, ob die gewählte Verteilung die Stichprobe gut beschreibt. Diese Tests vergleichen die empirische Verteilung mit der theoretischen und entscheiden, ob die Abweichungen tolerierbar sind."
+  },
+  {
+    "id": 9,
+    "thema": "Eingabedatenmodellierung",
+    "frage": "Welche Fehler können bei der Durchführung von solchen Anpassungstests auftreten?",
+    "musterloesung": "Es können Fehler 1. Art (fälschliches Verwerfen einer wahren Nullhypothese) und Fehler 2. Art (fälschliches Beibehalten einer falschen Nullhypothese) auftreten. Fehler 1. Art wird durch das Signifikanzniveau bestimmt, Fehler 2. Art durch die Teststärke."
+  },
+  {
+    "id": 10,
+    "thema": "Eingabedatenmodellierung",
+    "frage": "Was ist die Nullhypothese H0, und warum haben wir bei einem Fehler 2. Art ein Problem mit H1?",
+    "musterloesung": "H0 ist die Grundannahme (kein Effekt/Differenz). H1 ist die Annahme, dass H0 nicht zutrifft. Bei einem Fehler 2. Art wird H0 fälschlicherweise nicht abgelehnt. Das Problem: H1 sagt nur 'nicht H0', liefert uns aber keine genaue alternative Hypothese."
+  },
+  {
+    "id": 11,
+    "thema": "Eingabedatenmodellierung",
+    "frage": "Was sind Vor- und Nachteile einer theoretischen bzw. einer empirischen Verteilung?",
+    "musterloesung": "Empirische Verteilung nutzt tatsächliche Daten vollständig ohne Modellannahmen, ist aber abhängig von der Stichprobe und schlecht bei Extrapolation. Theoretische Verteilung ist effizienter und ermöglicht Extrapolation, erfordert aber Annahmen über die Verteilungsform und kann bei Anpassungstests durchfallen."
+  },
+  {
+    "id": 12,
+    "thema": "Dynamische Optimierung",
+    "frage": "Was können Sie uns zur dynamischen Optimierung erzählen?",
+    "musterloesung": "Man optimiert über mehrere Schritte/Perioden. In jeder Periode befindet man sich in einem Zustand und trifft eine Entscheidung, was in einem Folgezustand resultiert und Kosten/Erlöse bringt. Man minimiert die Kosten und erhält schließlich eine optimale Entscheidungsfolge (Politik)."
+  },
+  {
+    "id": 13,
+    "thema": "Dynamische Optimierung",
+    "frage": "Was besagt das Bellmansche Optimalitätsprinzip?",
+    "musterloesung": "Das Bellmansche Optimalitätsprinzip besagt, dass bei einer optimalen Politik auch eine Teilpolitik optimal ist, unabhängig von den Entscheidungen aus den Perioden vorher, jedoch abhängig vom Anfangszustand. Die Bellmansche Funktionsgleichung hilft, die optimale Wertefunktion zu bestimmen."
+  },
+  {
+    "id": 14,
+    "thema": "Dynamische Optimierung",
+    "frage": "Wie sieht die Dynamisierung des Rucksackproblems aus und ist es dann effizient lösbar (nicht mehr NP)?",
+    "musterloesung": "Bei der Dynamisierung wird in jeder Periode die Entscheidung getroffen, ob ein Gegenstand mitgenommen wird. Die Dynamisierung ändert jedoch nichts an der Schwierigkeit: Das Problem bleibt NP-schwer. Die Dynamische Programmierung hilft, es effizienter zu lösen, aber im Worst-Case bleibt es exponentiell."
+  },
+  {
+    "id": 15,
+    "thema": "Dynamische Optimierung",
+    "frage": "Was passiert bei der dynamischen Optimierung, wenn Zufall dazu kommt?",
+    "musterloesung": "Der Folgezustand ist nicht mehr deterministisch und tritt mit einer Wahrscheinlichkeit ein. Auch die Kosten sind nicht mehr deterministisch. Die Zielfunktion wird zur Zufallsvariable, man kann nicht mehr 'das eine Optimum' finden, sondern optimiert Erwartungswerte."
+  },
+  {
+    "id": 16,
+    "thema": "Dynamische Optimierung",
+    "frage": "Was ist das Problem bei dynamischer Optimierung über einen unendlichen Zeithorizont und was macht man dagegen?",
+    "musterloesung": "Das Hauptproblem ist die potenziell unendliche Akkumulation von Kosten. Die Lösung ist die Diskontierung zukünftiger Kosten (Diskontierungsfaktor < 1), um sicherzustellen, dass die akkumulierten Gesamtkosten endlich bleiben."
+  },
+  {
+    "id": 17,
+    "thema": "Zufallszahlen",
+    "frage": "Was sind Pseudozufallszahlen und warum werden sie in der Simulation verwendet?",
+    "musterloesung": "Pseudozufallszahlen sind reproduzierbar und effizient, da sie durch deterministische Algorithmen erzeugt werden. Echte Zufallszahlen (physikalisches Phänomen) sind unvorhersehbar und nicht reproduzierbar, was Simulationen erschwert."
+  },
+  {
+    "id": 18,
+    "thema": "Zufallszahlen",
+    "frage": "Wie funktioniert ein Linearer Kongruenzgenerator (LCG)?",
+    "musterloesung": "Ein LCG erzeugt Pseudozufallszahlen durch die rekursive Formel x_{i+1} = (a * x_i + c) mod m. Er nutzt einen Multiplikator, ein Inkrement und einen Modulus. Er ist einfach zu implementieren und weit verbreitet."
+  },
+  {
+    "id": 19,
+    "thema": "Zufallszahlen",
+    "frage": "Wann ist ein Zufallsgenerator gut?",
+    "musterloesung": "Ein guter Zufallsgenerator erzeugt unabhängige, gleichverteilte Zahlenfolgen mit langer Periode und hoher Effizienz. Zur Prüfung nutzt man Tests wie den Runs-Test, Chi-Quadrat-Test und Autokorrelationstest."
+  },
+  {
+    "id": 20,
+    "thema": "Zufallszahlen",
+    "frage": "Wie bekommt man aus gleichverteilten ganzen Zahlen zwischen 0 und m eine beliebige Verteilung?",
+    "musterloesung": "Zuerst teilt man die Zahlen durch m, um sie auf das Intervall [0,1) zu normieren. Anschließend wendet man die Inverse Transformationsmethode an, indem man die invertierbare Verteilungsfunktion F^-1 nutzt, um die gewünschte Verteilung zu erhalten."
+  },
+  {
+    "id": 21,
+    "thema": "Zufallszahlen",
+    "frage": "Ist die Verteilungsfunktion immer invertierbar? Was tut man, wenn nicht?",
+    "musterloesung": "Nicht alle Funktionen (wie z.B. die Normalverteilung) sind invertierbar. In diesem Fall müssen alternative Methoden wie die Konvolutionsmethode (über den zentralen Grenzwertsatz) oder die Box-Muller-Methode verwendet werden."
+  },
+  {
+    "id": 22,
+    "thema": "Lineare Optimierung",
+    "frage": "Definieren Sie ein lineares Optimierungsproblem.",
+    "musterloesung": "Ein lineares Optimierungsproblem besteht darin, eine lineare Zielfunktion zu maximieren oder minimieren, indem man Entscheidungsvariablen so wählt, dass alle linearen Nebenbedingungen erfüllt sind. Meist gilt die Nichtnegativitätsbedingung (x >= 0)."
+  },
+  {
+    "id": 23,
+    "thema": "Lineare Optimierung",
+    "frage": "Sind lineare Optimierungsprobleme immer lösbar und gibt es immer Optima?",
+    "musterloesung": "Nein, sie sind unlösbar, wenn der zulässige Bereich leer ist (sich widersprechende Bedingungen). Es gibt kein Optimum, wenn das Problem (und die Zielfunktion) unbeschränkt ist."
+  },
+  {
+    "id": 24,
+    "thema": "Lineare Optimierung",
+    "frage": "Erklären Sie das Prinzip des Simplexalgorithmus ohne Formeln.",
+    "musterloesung": "Der Simplexalgorithmus nutzt die Eigenschaft, dass optimale Lösungen an den Eckpunkten des zulässigen Bereichs liegen. Durch iteratives Prüfen und Wechseln zu besseren benachbarten Eckpunkten (entlang der Kanten) findet er effizient das Optimum, bis keine Verbesserung mehr möglich ist."
+  },
+  {
+    "id": 25,
+    "thema": "Lineare Optimierung",
+    "frage": "Warum ist in der linearen Optimierung ein lokales Optimum auch ein globales Optimum?",
+    "musterloesung": "Weil der zulässige Bereich (beschrieben durch lineare Ungleichungen) konvex ist und die Zielfunktion linear ist. Jede Verbesserung im Eckpunkt führt so zwingend in Richtung des globalen Optimums."
+  },
+  {
+    "id": 26,
+    "thema": "Lineare Optimierung",
+    "frage": "Was können Sie zu Endlichkeit, Korrektheit und Laufzeit des Simplexalgorithmus sagen?",
+    "musterloesung": "Endlichkeit: Endlich, solange das Problem nicht degeneriert ist (sonst Gefahr der Endlosschleife). Korrektheit: Partiell korrekt (findet Optimum oder stellt Unbeschränktheit fest, falls er terminiert). Laufzeit: Im Worst-Case exponentiell, praktisch aber hocheffizient (O(mn) pro Schritt)."
+  },
+  {
+    "id": 27,
+    "thema": "Lineare Optimierung",
+    "frage": "Ist das Problem der linearen Optimierung nur in exponentieller Zeit lösbar?",
+    "musterloesung": "Theoretisch ist es in polynomialer Zeit lösbar (z.B. durch Ellipsoidmethode oder Innere-Punkte-Methoden). In der Praxis wird jedoch oft der Simplexalgorithmus bevorzugt, da er bei realen Problemen sehr effizient ist."
+  },
+  {
+    "id": 28,
+    "thema": "Lineare Optimierung",
+    "frage": "Woher kennt der Simplexalgorithmus den Start-Eckpunkt?",
+    "musterloesung": "Wenn alle Werte b >= 0 sind, ist der Nullpunkt durch Einführung von Schlupfvariablen ein zulässiger Start. Wenn b < 0, führt man eine Vorphase mit künstlichen Variablen durch, um eine erste zulässige Basislösung zu finden."
+  },
+  {
+    "id": 29,
+    "thema": "Ereignisdiskrete Simulation",
+    "frage": "Was ist der Process-Interaction-Ansatz und welche Programmierkonstrukte benötigt man?",
+    "musterloesung": "Beim Process-Interaction-Ansatz werden Ereignisse von Individuen zu permanent laufenden Prozessen zusammengefasst, die sich durch Warten synchronisieren (höchstes Abstraktionsniveau). Man benötigt Threads/Koroutinen, Synchronisationsmechanismen und dynamische Speicherallokation."
+  },
+  {
+    "id": 30,
+    "thema": "Modellierung",
+    "frage": "Was ist der Unterschied zwischen Kalibrierung und Validierung?",
+    "musterloesung": "Kalibrierung passt Parameter des Modells an, um die Übereinstimmung mit realen Messdaten zu verbessern. Validierung überprüft anhand unabhängiger, nicht zur Kalibrierung genutzter Datensätze, ob der Simulator realistische Ergebnisse liefert."
+  },
+  {
+    "id": 31,
+    "thema": "Grundlagen",
+    "frage": "Können Sie kontinuierliche Modelle von ereignisdiskreten Modellen abgrenzen und ein Beispiel nennen?",
+    "musterloesung": "Kontinuierliche Modelle (z.B. Lotka-Volterra-Modell) beschreiben Systeme mit stetigen Zustandsänderungen über die Zeit mittels Differentialgleichungen[cite: 41, 42, 43]. Ereignisdiskrete Modelle beschreiben Systeme, deren Zustände sich nur zu diskreten Zeitpunkten durch Ereignisse ändern[cite: 42]."
+  },
+  {
+    "id": 32,
+    "thema": "Modellierung",
+    "frage": "Wie sieht der Modellierungsprozess aus? Welche Stufen werden durchlaufen?",
+    "musterloesung": "Der Prozess startet beim realen System, das als mentales Modell erfasst wird[cite: 98]. Daraus entsteht ein deskriptives Modell (Zusammenhänge), welches zum formalen (mathematischen) Modell weiterentwickelt wird[cite: 98]. Daraus entsteht letztlich der Simulator für das Experimentieren[cite: 98]."
+  },
+  {
+    "id": 33,
+    "thema": "Modellierung",
+    "frage": "Wie finden sich die unkontrollierbaren Eingaben im Modell wieder?",
+    "musterloesung": "Sie werden durch Wahrscheinlichkeitsverteilungen und daraus generierte Zufallszahlen simuliert, um Variabilität und Unsicherheit (z.B. Ankunftszeiten) abzubilden[cite: 98]."
+  },
+  {
+    "id": 34,
+    "thema": "Ereignisdiskrete Simulation",
+    "frage": "Welche Vorteile haben ressourcenorientierte und kundenorientierte Modelle?",
+    "musterloesung": "Ressourcenorientierte Modelle ermöglichen das Messen der Auslastung und Effizienz von Ressourcen (z.B. Maschinen)[cite: 101]. Kundenorientierte Modelle ermöglichen das Messen von Warte- und Verweilzeiten zur Bewertung der Servicequalität[cite: 101]."
+  },
+  {
+    "id": 35,
+    "thema": "Ereignisdiskrete Simulation",
+    "frage": "Was ist der Activity-Scanning-Ansatz?",
+    "musterloesung": "Ein Simulationsansatz, bei dem regelmäßig in Zeitschritten überprüft wird, ob bestimmte Bedingungen erfüllt sind, um Aktivitäten auszulösen[cite: 103]."
+  },
+  {
+    "id": 36,
+    "thema": "Ereignisdiskrete Simulation",
+    "frage": "In welchen Zuständen kann ein Prozess im Process-Interaction-Ansatz sein?",
+    "musterloesung": "Ein Prozess kann aktiv (wird ausgeführt), pausiert (wartet auf Ereignis/Bedingung), wartend (bereit, wartet aber auf Ressourcen) oder beendet (Ausführung abgeschlossen) sein[cite: 87, 88]."
+  },
+  {
+    "id": 37,
+    "thema": "Ereignisdiskrete Simulation",
+    "frage": "Welche Probleme können bei der Realisierung von Process-Interaction auftreten?",
+    "musterloesung": "Es können Probleme durch die hohe Komplexität der Implementierung von Synchronisationsmechanismen, Leistungsprobleme durch das Verwalten vieler Threads sowie Deadlocks (gegenseitiges Blockieren der Prozesse) auftreten[cite: 88]."
+  },
+  {
+    "id": 38,
+    "thema": "Ereignisdiskrete Simulation",
+    "frage": "Erläutern Sie pause_for und wait_until sowie zwei Verbesserungsmöglichkeiten für wait_until.",
+    "musterloesung": "pause_for sortiert pausierte Prozesse nach Aufweckdatum[cite: 101]. Bei wait_until werden standardmäßig alle Prozesse geprüft[cite: 101]. Besser ist die Nutzung von activate/passivate (Prozesse wecken sich gegenseitig) oder die Verwaltung von separaten Warteschlangen für jede Bedingung[cite: 88, 89, 101]."
+  },
+  {
+    "id": 39,
+    "thema": "Eingabedatenmodellierung",
+    "frage": "Was nutzt man in der Praxis häufiger: theoretische oder empirische Verteilungen und warum?",
+    "musterloesung": "In der Praxis nutzt man aus Effizienzgründen häufiger theoretische Verteilungen[cite: 23]. Sie bieten eine einfachere Handhabung, benötigen weniger Speicher und Rechenleistung und ermöglichen Extrapolationen über die erhobenen Daten hinaus[cite: 23]."
+  },
+  {
+    "id": 40,
+    "thema": "Eingabedatenmodellierung",
+    "frage": "Wie führt man einen Hypothesentest durch, um Aussagen über Zufallszahlen zu treffen?",
+    "musterloesung": "1. Nullhypothese (H0) und Alternativhypothese (H1) formulieren[cite: 89]. 2. Teststatistik bestimmen[cite: 89]. 3. Signifikanzniveau festlegen[cite: 89]. 4. Kritischen Wert berechnen[cite: 89]. Wird der kritische Wert durch die Teststatistik überschritten, lehnt man H0 ab[cite: 89]."
+  },
+  {
+    "id": 41,
+    "thema": "Eingabedatenmodellierung",
+    "frage": "Erläutern Sie den Kolmogorov-Smirnov-Test.",
+    "musterloesung": "Er vergleicht die empirische Verteilungsfunktion Fn(x) mit der theoretischen Verteilungsfunktion F(x)[cite: 93]. Die Teststatistik D ist die maximale absolute Differenz: D = |Fn(x) - F(x)|[cite: 93]. Dieser Wert wird dann mit einem kritischen Wert verglichen[cite: 93]."
+  },
+  {
+    "id": 42,
+    "thema": "Zufallszahlen",
+    "frage": "Wie transformiert man eine Standardnormalverteilung in eine allgemeine Normalverteilung?",
+    "musterloesung": "Durch eine lineare Transformation: x = mu + sigma * z[cite: 65]. Dabei wird die standardnormalverteilte Zufallszahl z mit der Standardabweichung (sigma) skaliert und um den Mittelwert (mu) verschoben[cite: 65]."
+  },
+  {
+    "id": 43,
+    "thema": "Zufallszahlen",
+    "frage": "Welche Methodiken zur Erzeugung von Pseudozufallszahlen gibt es neben dem LCG?",
+    "musterloesung": "Der Mersenne-Twister (bietet eine extrem lange Periode und gute Verteilung), der Lehmer-RNG (eine spezielle, effiziente Form des LCG) und der Lagged-Fibonacci-Generator (nutzt eine rekursive Fibonacci-ähnliche Beziehung)[cite: 36]."
+  },
+  {
+    "id": 44,
+    "thema": "Dynamische Optimierung",
+    "frage": "Warum ist die optimale Politik bei der dynamischen Optimierung trotzdem vom Anfangszustand x_1 abhängig?",
+    "musterloesung": "Weil der Anfangszustand x_1 den Ausgangspunkt für alle folgenden Perioden festlegt[cite: 28]. Jede Teilpolitik hängt zwar nur vom jeweils aktuellen Zustand ab, aber dieser Zustand wurde indirekt durch x_1 und die vorangegangenen Entscheidungen bestimmt[cite: 28, 29]."
+  },
+  {
+    "id": 45,
+    "thema": "Dynamische Optimierung",
+    "frage": "Wie löst man ein dynamisches Optimierungsproblem konkret (Phasen)?",
+    "musterloesung": "In der Rückwärtsphase iteriert man rückwärts durch die Perioden (mit Endbedingung v_{n+1} = 0), um die optimale Wertefunktion zu berechnen[cite: 102]. In der Vorwärtsphase trifft man, ausgehend vom Anfangszustand, die optimalen Entscheidungen und bestimmt so den optimalen Wert[cite: 102]."
+  },
+  {
+    "id": 46,
+    "thema": "Lineare Optimierung",
+    "frage": "Wie funktioniert die lineare Optimierung im Zweidimensionalen grafisch?",
+    "musterloesung": "Der zulässige Bereich entsteht durch die Schnittpunkte der Nebenbedingungen im Koordinatensystem[cite: 94]. Die Zielfunktion wird als Isogewinngerade dargestellt und so lange parallel verschoben, bis sie den äußersten Eckpunkt des zulässigen Bereichs berührt[cite: 94]."
+  },
+  {
+    "id": 47,
+    "thema": "Lineare Optimierung",
+    "frage": "Welche grundlegenden rechnerischen Schritte führt man beim Simplexalgorithmus durch?",
+    "musterloesung": "1. Ungleichungen durch Schlupfvariablen in Standardform (Gleichungen) bringen[cite: 74, 75]. 2. Erste Simplextabelle aufstellen[cite: 75]. 3. Pivot-Element bestimmen (Eintritts- und Austrittsvariable ermitteln)[cite: 75]. 4. Pivotierung (Zeilenoperationen) durchführen, bis alle Koeffizienten in der Zielfunktions-Zeile nicht-negativ sind[cite: 75, 76, 77]."
+  },
+  {
+    "id": 48,
+    "thema": "Lineare Optimierung",
+    "frage": "Wie geht man bei der ganzzahligen linearen Optimierung vor und was ist Branch-and-Bound?",
+    "musterloesung": "Zusätzlich wird die Bedingung eingeführt, dass die Entscheidungsvariablen zwingend ganzzahlig sein müssen[cite: 105]. Beim Branch-and-Bound-Verfahren wird das Problem in kleinere Teilprobleme aufgeteilt (Branch) und bewertet (Bound), um effizient die optimale ganzzahlige Lösung zu finden[cite: 105]."
+  },
+  {
+    "id": 49,
+    "thema": "Dynamische Optimierung",
+    "frage": "Erläutern Sie Markov-Modelle kurz.",
+    "musterloesung": "Markov-Modelle beschreiben Systeme, die von einem Zustand in einen anderen übergehen[cite: 105]. Diese Übergänge basieren auf festgelegten Übergangswahrscheinlichkeiten[cite: 105]."
+  },
+{
+    "id": 50,
+    "thema": "Ergebnisauswertung",
+    "frage": "Was macht man mit den Ergebnissen, die man aus der Simulation bekommt, und wie schätzt man den Erwartungswert Y?",
+    "musterloesung": "Da jede Trajektorie in stochastischen Simulationen wegen des Zufalls anders verläuft, variieren die Ergebnisse[cite: 122, 142]. Um zuverlässige Aussagen zu treffen, schätzt man Kennzahlen wie den Erwartungswert E(Y_j), indem man den Durchschnitt aus wiederholten Beobachtungen verschiedener, unabhängiger Simulationsdurchläufe (Trajektorien) berechnet[cite: 122, 125, 142, 145]."
+  },
+  {
+    "id": 51,
+    "thema": "Ergebnisauswertung",
+    "frage": "Was ist ein Konfidenzintervall?",
+    "musterloesung": "Ein Konfidenzintervall gibt an, innerhalb welcher Grenzen der wahre Wert einer geschätzten Größe (z.B. der Erwartungswert) mit einer bestimmten Wahrscheinlichkeit liegt[cite: 123, 143]. Es ist der Bereich um unseren Schätzwert herum, in dem wir erwarten, dass der tatsächliche Durchschnittswert zu finden ist[cite: 123, 143]."
+  },
+  {
+    "id": 52,
+    "thema": "Ergebnisauswertung",
+    "frage": "Wie berechnet man das Konfidenzintervall und warum ist der zentrale Grenzwertsatz oft nützlicher als die Tschebyscheff-Ungleichung?",
+    "musterloesung": "Man kann die Tschebyscheff-Ungleichung, den zentralen Grenzwertsatz (ZGS) oder die T-Verteilung nutzen[cite: 126, 146]. Der ZGS ist in der Regel nützlicher, weil er wesentlich engere Konfidenzintervalle liefert[cite: 124, 144]. Die Tschebyscheff-Ungleichung ist hingegen sehr breit und konservativ, da sie keine spezifischen Annahmen über die Form der Verteilung macht[cite: 124, 144]."
+  },
+  {
+    "id": 53,
+    "thema": "Ergebnisauswertung",
+    "frage": "Verwendet man bei der Auswertung alle Daten von Beginn der Simulation an?",
+    "musterloesung": "Nein, man muss die Simulation erst anlaufen lassen, da die ersten Werte in der Anlaufphase oft noch nicht stabil sind[cite: 126, 146]. Man wählt einen Zeitpunkt s so, dass ab diesem Punkt die Simulationsergebnisse stabil und repräsentativ für das langfristige Verhalten des Systems sind, und wertet nur Daten nach s aus[cite: 126, 146]."
+  },
+  {
+    "id": 54,
+    "thema": "Ergebnisauswertung",
+    "frage": "Wie findet man ein geeignetes s (Ende der Anlaufphase)?",
+    "musterloesung": "Es gibt mehrere Methoden: Bei der Conway-Methode sucht man das kleinste k, sodass der Wert y_k nicht mehr das Maximum oder Minimum aller nachfolgenden Werte ist[cite: 126, 146]. Bei 'Crossing the Mean' prüft man, wie oft neue Daten den kumulativen Mittelwert kreuzen[cite: 126, 146]. Bei 'Batch Means' unterteilt man die Daten in gleich große Batches und prüft die Tendenz der Durchschnittswerte der Batches[cite: 126, 146]."
+  },
+  {
+    "id": 55,
+    "thema": "Ergebnisauswertung",
+    "frage": "Was ist der Vorteil der Batch Means Methode?",
+    "musterloesung": "Batch Means hilft, die Annäherung an die Normalverteilung zu verbessern, was die Genauigkeit der statistischen Analyse stark erhöht[cite: 126, 146]. Indem man Mittelwerte über Batches bildet, sind diese der Normalverteilung ähnlicher, selbst wenn die Gesamtanzahl der Beobachtungen für den ZGS nicht groß genug wäre[cite: 126, 146]."
+  },
+  {
+    "id": 56,
+    "thema": "Ereignisdiskrete Simulation",
+    "frage": "Werden die Prozesse beim Process-Interaction-Ansatz wie bei Betriebssystemthreads nach Belieben angestoßen und eingefroren?",
+    "musterloesung": "Nein, im Gegensatz zu Betriebssystemthreads, die vom Scheduler nach Belieben gestartet und gestoppt werden können, laufen Prozesse in der Simulation normalerweise so lange durch, bis sie auf eine hemmende Bedingung stoßen[cite: 112, 132]. An diesem Punkt warten sie dann selbstständig oder beenden ihre Ausführung[cite: 112, 132]."
+  },
+  {
+    "id": 57,
+    "thema": "Ereignisdiskrete Simulation",
+    "frage": "Wie lässt sich wait_until beim Process-Interaction-Ansatz realisieren und welches Konzept ist besser?",
+    "musterloesung": "Man kann separate Warteschlangen für spezifische Bedingungen nutzen oder Prozesse sich gegenseitig über activate/passivate wecken lassen[cite: 112, 132]. Warteschlangen sind effizienter und fehlerresistenter, aber weniger flexibel[cite: 112, 132]. Activate/passivate bietet mehr Flexibilität und Kontrolle, birgt aber ein höheres Fehlerrisiko (z.B. Deadlocks), falls das Aktivieren vergessen wird[cite: 112, 132]."
+  },
+  {
+    "id": 58,
+    "thema": "Ereignisdiskrete Simulation",
+    "frage": "Was machen Sie, wenn im Process-Interaction-Ansatz mehrere Prozesse gleichzeitig dran sind, Sie aber nur einen Prozessor haben?",
+    "musterloesung": "In solchen Fällen kommt das Threadkonzept moderner Programmiersprachen zum Einsatz[cite: 112, 132]. Threads erlauben es, dass mehrere Prozesse quasi-gleichzeitig auf einem Prozessor ausgeführt werden, indem die CPU-Zeit zwischen ihnen aufgeteilt wird[cite: 112, 132]."
+  },
+  {
+    "id": 59,
+    "thema": "Zufallszahlen",
+    "frage": "Warum sollte man beim linearen Kongruenzgenerator den Modulus m am besten als 2^n - 1 wählen anstatt 2^n?",
+    "musterloesung": "Ein Modulus von 2^n ist zwar sehr effizient berechenbar, erzeugt aber unschöne Muster in den unteren Bits[cite: 114, 134]. Die Wahl von 2^n - 1 bietet bessere Zufallseigenschaften und lässt sich dank eines Rechentricks ('simulierte Division') dennoch sehr effizient und ohne eine echte rechenintensive Division ausrechnen[cite: 114, 115, 134, 135]."
+  },
+  {
+    "id": 60,
+    "thema": "Eingabedatenmodellierung",
+    "frage": "Wie geht man geschickter vor beim Maximum Likelihood Schätzer und welche Vorteile hat das?",
+    "musterloesung": "Man verwendet den natürlichen Logarithmus der Likelihood-Funktion (Log-Likelihood)[cite: 119, 139]. Das verwandelt das Produkt in eine Summe, was das Ableiten und Finden des Extremwerts erheblich vereinfacht[cite: 117, 119, 137, 139]. Zudem verhindert es, dass das Produkt vieler kleiner Wahrscheinlichkeiten rechnerisch problematisch klein wird (Vermeidung von Underflow)[cite: 119, 139]."
+  },
+{
+    "id": 61,
+    "thema": "Grundlagen / Simulation",
+    "frage": "Warum führt man Experimente oft an einem Modell (Ersatzsystem) und nicht am realen System durch?",
+    "musterloesung": "Das Realsystem kann für Experimente zu schnell, zu langsam oder noch gar nicht existent sein[cite: 153]. Zudem können Experimente in Extremsituationen zu gefährlich oder zu teuer sein (z.B. ein makroökonomisches Finanzexperiment mit einer echten Währung)[cite: 153]."
+  },
+  {
+    "id": 62,
+    "thema": "Modellierung",
+    "frage": "Können Kalibriersituationen auch als Validierungssituationen benutzt werden?",
+    "musterloesung": "Nein, das geht nicht[cite: 150]. Nach dem Kalibrieren (dem Anpassen der Parameter an Messdaten) ist das Verhalten des Simulators für diese spezifischen Daten natürlich plausibel, es kann aber an allen anderen Stellen grob daneben liegen (Überanpassung)[cite: 150]. Validierung erfordert unabhängige Daten[cite: 150]."
+  },
+  {
+    "id": 63,
+    "thema": "Zufallszahlen",
+    "frage": "Sind unkontrollierbare Eingaben im Modell auch unkontrollierbar?",
+    "musterloesung": "Jein[cite: 154]. Im Modell verwendet man Pseudozufallsgeneratoren, die ausgehend von einem definierten Saatwert immer die gleichen Zufallszahlen liefern[cite: 154]. Das macht die unkontrollierbaren Eingaben im Modell kontrollierbar, was sinnvoll ist, um einen Simulationsablauf reproduzieren und nachvollziehen zu können[cite: 154]."
+  },
+  {
+    "id": 64,
+    "thema": "Zufallszahlen",
+    "frage": "Kann man nachweisen oder beweisen, wie gut ein Pseudozufallsgenerator funktioniert?",
+    "musterloesung": "Grundsätzlich kann man nicht beweisen, dass ein Generator gute Zufallszahlen liefert[cite: 154]. Man kann mittels statistischer Tests (wie z.B. dem Runs-Test) lediglich schlechte Generatoren 'entlarven'[cite: 154]."
+  },
+  {
+    "id": 65,
+    "thema": "Zufallszahlen",
+    "frage": "Wie erzeugt man normalverteilte Zufallszahlen, da die Verteilungsfunktion hier nicht in geschlossener Form invertierbar ist?",
+    "musterloesung": "Man kann das Konvolutionsverfahren anwenden, das den zentralen Grenzwertsatz nutzt: Man transferiert n gleichverteilte Zufallszahlen, addiert diese auf und skaliert sie[cite: 154]. Oft bietet sich hierfür n=12 an[cite: 154]. Alternativ nutzt man die Box-Muller-Methode[cite: 134, 154]."
+  },
+  {
+    "id": 66,
+    "thema": "Dynamische Optimierung",
+    "frage": "Lässt sich das Rucksackproblem durch die Dynamisierung auf einmal effizient (nicht in exponentieller Zeit) berechnen?",
+    "musterloesung": "Nein, man hat weiterhin das Problem, dass man sehr viele Zustände (nämlich 2^n) hat, da für jedes Objekt die Entscheidung gespeichert werden muss, ob man es mitnimmt oder nicht[cite: 158]. Das Problem bleibt NP-schwer[cite: 158]."
+  },
+  {
+    "id": 67,
+    "thema": "Dynamische Optimierung",
+    "frage": "Wie geht man bei der dynamischen Optimierung vor, wenn es sehr viele oder gar unendlich viele Zustände gibt?",
+    "musterloesung": "Wenn die Funktion ableitbar ist, kann man die Bellman-Gleichung analytisch ableiten und dafür eine Extremstelle finden, anstatt alle Zustände diskret durchzurechnen[cite: 158]."
+  },
+  {
+    "id": 68,
+    "thema": "Dynamische Optimierung",
+    "frage": "Was bedeutet 'optimal' bei der stochastischen dynamischen Optimierung (z.B. bei Markov-Ketten) und wie geht man bei extremer Unsicherheit vor?",
+    "musterloesung": "Meist interessiert man sich für das Optimum über den Erwartungswert, wofür man Wahrscheinlichkeiten in die Bellman-Formel einbaut und summiert[cite: 158]. Will man sehr konservativ sein und auch im schlechtesten Fall ein Optimum garantieren, arbeitet man über eine 'Min-Max'-Formel (Minimierung der maximalen Folgekosten)[cite: 158]."
+  },
+  {
+    "id": 69,
+    "thema": "Nichtlineare Optimierung",
+    "frage": "Was macht man in der nichtlinearen Optimierung, wenn die zu optimierende Funktion gar nicht konvex ist?",
+    "musterloesung": "Man sucht iterativ eine verbessernde Richtung über den Gradienten g(x) oder wendet heuristische Suchverfahren an, um sich einem lokalen Optimum zu nähern[cite: 160]."
+  },
+  {
+    "id": 70,
+    "thema": "Nichtlineare Optimierung",
+    "frage": "Wie geht man in der nichtlinearen Optimierung vor, wenn das Problem restringiert ist (Nebenbedingungen hat), und wie verhält sich der Strafterm?",
+    "musterloesung": "Man stellt eine Straffunktion auf, um den zulässigen Bereich abzubilden[cite: 160]. Der Strafterm ist dabei keine Konstante: Wird der zulässige Bereich bei einer Funktionsauswertung verlassen, wird der Strafterm so lange erhöht, bis das Ergebnis wieder in den zulässigen Bereich gezwungen wird[cite: 160]."
+  },
+  {
+    "id": 71,
+    "thema": "Lineare Optimierung",
+    "frage": "Was bedeuten Basis- und Nichtbasisvariablen im Simplextableau und im zugrundeliegenden linearen Gleichungssystem (LGS)?",
+    "musterloesung": "Basisvariablen sind die Variablen, die in der aktuellen Lösung enthalten sind (ungleich null) und für die das LGS aufgelöst wurde[cite: 95, 148]. Nichtbasisvariablen sind die restlichen Variablen, die in der aktuellen betrachteten Eckpunkt-Lösung den Wert null annehmen[cite: 95, 148]."
+  },
+  {
+    "id": 72,
+    "thema": "Dynamische Optimierung",
+    "frage": "Wie lautet die Bellmansche Funktionsgleichung formal?",
+    "musterloesung": "Die Gleichung lautet typischerweise: v_j^*(x_j) = \\min_{u_j} [g_j(x_j, u_j) + v_{j+1}^*(f_j(x_j, u_j))][cite: 25, 151, 157]. Sie minimiert die Summe aus den sofortigen Kosten g_j der aktuellen Entscheidung und den optimalen Folgekosten v_{j+1}^* des daraus resultierenden Folgezustands f_j[cite: 25, 157]."
+  },
+  {
+    "id": 73,
+    "thema": "Ergebnisauswertung",
+    "frage": "Bei der Matrix-Darstellung zur Schätzung des Erwartungswerts E(Y_j): Was genau repräsentieren die Zeilen i und die Spalten j?",
+    "musterloesung": "Der Index i (die Zeilen) steht für die unterschiedlichen, unabhängigen Simulationsdurchläufe bzw. Trajektorien[cite: 121, 125, 141, 145, 155]. Der Index j (die Spalten) steht für die zeitliche Abfolge der Beobachtungen innerhalb einer einzelnen Trajektorie[cite: 121, 141, 155]. Der Erwartungswert zu einem Zeitpunkt j wird folglich als Mittelwert über alle Zeilen einer Spalte geschätzt[cite: 125, 145, 155]."
+  },
+  {
+    "id": 74,
+    "thema": "Ergebnisauswertung",
+    "frage": "Welchen potenziellen Nachteil hat die Nutzung der T-Verteilung für die Berechnung von Konfidenzintervallen in der Simulation?",
+    "musterloesung": "Die T-Verteilung setzt eigentlich voraus, dass die zugrundeliegenden Daten normalverteilt sind[cite: 126, 146, 156]. Da man dies bei den Ergebnissen von Simulationsdurchläufen oft nicht sicher weiß, kann die Nutzung der T-Verteilung fälschlicherweise eine Konfidenz (Sicherheit) vorgaukeln, die in der Realität gar nicht gegeben ist[cite: 126, 146, 156]."
+  },
+  {
+    "id": 75,
+    "thema": "Modellierung",
+    "frage": "Wird ein System immer absolut betrachtet, wenn man ein Modell erstellt?",
+    "musterloesung": "Nein, ein System und seine Abgrenzung zur Umwelt (Systemgrenze) werden immer zweckgerichtet, also bezüglich eines spezifischen Systemzweckes oder Analyseziels betrachtet und modelliert[cite: 1, 86, 97, 153]."
+  },
+  {
+    "id": 76,
+    "thema": "Dynamische Optimierung",
+    "frage": "Was macht man in der dynamischen Optimierung bei einem unendlichen Zeithorizont dagegen, dass sich die Kosten immer weiter ins Unendliche aufsummieren?",
+    "musterloesung": "Man diskontiert die zukünftigen Kosten[cite: 33, 167]. Das bedeutet, man multipliziert sie mit einem Diskontierungsfaktor (oft alpha oder beta), der strikt zwischen 0 und 1 liegt (0 < Faktor < 1), um sicherzustellen, dass die Gesamtkosten über die unendliche Zeit endlich bleiben[cite: 33, 167]."
+  },
+  {
+    "id": 77,
+    "thema": "Lineare Optimierung",
+    "frage": "Was passiert beim Simplexalgorithmus, wenn ein lineares Optimierungsproblem degeneriert ist?",
+    "musterloesung": "Ein Problem ist degeneriert, wenn sich mehr als n Hyperebenen (Nebenbedingungen) in einem einzigen Eckpunkt schneiden[cite: 80, 163]. Der Algorithmus kann dann beim Basiswechsel in diesem Eckpunkt hängen bleiben und in eine Endlosschleife geraten, weshalb die theoretische Endlichkeit des Verfahrens nicht mehr garantiert ist[cite: 80, 163]. Praktisch umgeht man dies oft durch die zufällige Auswahl eines anderen Eckpunkts[cite: 80, 163]."
+  },
+  {
+    "id": 78,
+    "thema": "Modellierung",
+    "frage": "Warum erhofft man sich bei der Validierung, dass der Simulator in einer möglichst großen lokalen Umgebung um die Validierungssituationen plausible Resultate liefert?",
+    "musterloesung": "Da für die tatsächliche Experimentsituation in der Regel wenig bis kein reales Wissen vorliegt (sonst bräuchte man das Experiment nicht), muss man darauf vertrauen, dass das Modell nicht nur exakt an den gemessenen Validierungspunkten korrekt arbeitet, sondern auch in deren Umgebung – also in der Experimentsituation – plausible Resultate liefert[cite: 149]."
+  },
+  {
+    "id": 79,
+    "thema": "Zufallszahlen",
+    "frage": "Warum wählt man bei der Erzeugung normalverteilter Zufallszahlen über die Konvolutionsmethode oft n=12 aufzusummierende Zufallszahlen?",
+    "musterloesung": "Die Zahl 12 bietet sich rechnerisch sehr gut an, da sie die Varianz-Korrektur beim zentralen Grenzwertsatz vereinfacht[cite: 115, 135, 154]. Ein Nachteil ist zwar, dass so keine Zufallswerte außerhalb des Intervalls [-6, 6) erzeugt werden, dies ist aber vernachlässigbar, da derartige Extremwerte in der echten Normalverteilung ohnehin äußerst selten vorkommen[cite: 115, 135, 154]."
+  },
+  {
+    "id": 80,
+    "thema": "Ereignisdiskrete Simulation",
+    "frage": "Welche drei konkreten Aufgaben führt eine Ereignisroutine bei der Abarbeitung eines Events im Event-Scheduling-Ansatz aus?",
+    "musterloesung": "1. Den aktuellen Systemzustand ändern[cite: 110, 113, 130, 133, 150]. 2. Die Leistungsmaße und Statistiken aktualisieren[cite: 110, 113, 130, 133, 150]. 3. Neue, in der Zukunft liegende Ereignisse einplanen und in die Event-Queue (Ereignisliste) einfügen[cite: 110, 113, 130, 133, 150]."
+  },
+  {
+    "id": 81,
+    "thema": "Grundlagen",
+    "frage": "Wann nutzen wir Black-Box- und wann White-Box-Modelle, und warum berechnen wir nicht einfach alles analytisch?",
+    "musterloesung": "Bei Black-Box-Modellen kennt man die innere Struktur nicht und modelliert induktiv über Ein- und Ausgaben, bei White-Box-Modellen leitet man das Verhalten deduktiv ab[cite: 169]. Analytische Modelle erfordern oft starke Vereinfachungen (wie Gedächtnislosigkeit), wodurch sie für komplexe reale Systeme ungeeignet sind[cite: 169]. Die Simulation erlaubt es, reale Verteilungen, komplexe Synchronisationen und Abhängigkeiten exakt abzubilden, ist aber punktuell und unterliegt statistischen Schwankungen[cite: 169]."
+  },
+  {
+    "id": 82,
+    "thema": "Ereignisdiskrete Simulation",
+    "frage": "Erklären Sie den paradoxen Zusammenhang zwischen Modellzeit und CPU-Zeit.",
+    "musterloesung": "Wenn die Modellzeit verstreicht (beim Sprung zwischen zwei Ereignissen), wird keine CPU-Zeit verbraucht[cite: 170]. CPU-Zeit wird stattdessen exakt dann verbraucht, wenn die Modellzeit stillsteht – nämlich, während der Rechner zu einem diskreten Zeitpunkt die Ereignisroutine abarbeitet[cite: 170]."
+  },
+  {
+    "id": 83,
+    "thema": "Ereignisdiskrete Simulation",
+    "frage": "Wie funktioniert die Kalender-Warteschlange (Kalender-Queue)?",
+    "musterloesung": "Sie besteht aus einem Array von geordneten Listen, wobei jede Zelle ein festes Zeitintervall repräsentiert, und sortiert Ereignisse per Modulo-Arithmetik ein[cite: 170]. Damit sie effizient bleibt, passt sie die Zellbreite und die Zellanzahl dynamisch an[cite: 170]. Amortisiert erreicht sie eine fast konstante Zugriffszeit, versagt aber im Vergleich zum Heap bei stark variierenden Ereignissen oder häufigem Löschen[cite: 170]."
+  },
+  {
+    "id": 84,
+    "thema": "Ereignisdiskrete Simulation",
+    "frage": "Warum entstehen im Process-Interaction-Ansatz schnell Deadlocks, und welche Vereinbarung wird deshalb in Simulationssprachen getroffen?",
+    "musterloesung": "Ein Deadlock kann entstehen, wenn zeitgleiche Anweisungen zweier interagierender Prozesse vom Rechner beliebig quasi-parallel verzahnt werden, da so inkonsistente Zwischenzustände gelesen werden können[cite: 171]. Daher vereinbart man im Simulator, dass ein aktiver Prozess immer ununterbrochen so lange läuft, bis er selbst explizit auf eine hemmende Bedingung stößt (wait_until/pause_for) oder terminiert (keine Preemption)[cite: 171]."
+  },
+  {
+    "id": 85,
+    "thema": "Modellierung",
+    "frage": "Was ist bei der Güterverkehrszentrums-Simulation (GVZ) schiefgelaufen, wenn Input = Output gilt?",
+    "musterloesung": "Werden offene Ankunftsströme über ein endliches Lager synchronisiert, bei dem Zufluss und Abfluss identisch sind (Random Walk), existiert keine stationäre Verteilung[cite: 171]. Die Varianz wächst unbeschränkt, sodass das Lager langfristig immer komplett voll oder leer wird[cite: 171]. Ein zu kurzer Simulationslauf täuscht hier Stabilität vor, wo keine ist[cite: 171]."
+  },
+  {
+    "id": 86,
+    "thema": "Modellierung",
+    "frage": "Warum kann Kalibrierung gefährlich sein und wie vergleicht man Realsystem und Simulator statistisch?",
+    "musterloesung": "Kalibrierung birgt die Gefahr der Überanpassung (Overfitting) an eine spezifische Situation, wodurch das Modell in der gewünschten Experimentsituation falsche Werte liefern kann[cite: 172]. Um die Daten zu vergleichen, berechnet man ein Konfidenzintervall für die Differenz der Mittelwerte (z.B. über den Welch-Test bei ungepaarten oder das Paired-t-Konfidenzintervall bei gepaarten Stichproben) und prüft, ob die 0 enthalten ist[cite: 172]."
+  },
+  {
+    "id": 87,
+    "thema": "Lineare Optimierung",
+    "frage": "Was ist der Unterschied zwischen der Sensitivitätsanalyse und der parametrischen Analyse, und was bewirkt eine Änderung der rechten Seite geometrisch?",
+    "musterloesung": "Die Sensitivitätsanalyse prüft, wie stark Parameter (wie Kosten c oder Kapazitäten b) schwanken dürfen, ohne dass das aktuelle Optimum (die Ecke/Basis) qualitativ gewechselt werden muss[cite: 172]. Springt das Optimum in einen anderen Eckpunkt, spricht man von parametrischer Analyse[cite: 172, 173]. Eine Änderung der rechten Seite (b) verschiebt die zugehörigen Restriktionsgeraden parallel[cite: 173]."
+  },
+  {
+    "id": 88,
+    "thema": "Lineare Optimierung",
+    "frage": "Wie funktionieren Innere-Punkte-Verfahren im Vergleich zum Simplexalgorithmus?",
+    "musterloesung": "Während der Simplex über die Ränder und Ecken wandert, laufen Innere-Punkte-Verfahren durch das Innere des zulässigen Bereichs[cite: 173]. Sie nutzen einen logarithmischen Barriere-Term in der Zielfunktion, der den Rand unüberwindbar macht, und lassen den Barriere-Parameter schrittweise gegen Null konvergieren, wodurch sich die innere Lösung an das globale Optimum am Rand annähert[cite: 173]."
+  },
+  {
+    "id": 89,
+    "thema": "Lineare Optimierung",
+    "frage": "Wann liefert das lineare Programm automatisch eine ganzzahlige Lösung, ohne dass man runden oder Schnittebenen anwenden muss?",
+    "musterloesung": "Wenn die Koeffizientenmatrix A total unimodular ist (die Determinante jeder quadratischen Untermatrix ist 0, +1 oder -1) und der Vektor b ganzzahlig ist[cite: 174]. Dann wird durch die Cramer'sche Regel nur durch +1 oder -1 geteilt, sodass jede Basislösung automatisch exakt ganzzahlig wird[cite: 174]."
+  },
+  {
+    "id": 90,
+    "thema": "Lineare Optimierung",
+    "frage": "Wie funktioniert das Schnittebenenverfahren von Gomory?",
+    "musterloesung": "Man sucht in der LP-Lösung eine gebrochene Basisvariable, zerlegt den Wert in den ganzzahligen Anteil und den positiven Rest, und leitet daraus eine neue Ungleichung (Schnittebene) ab[cite: 174]. Diese Ungleichung schneidet das aktuell gebrochene Optimum rigoros ab, lässt aber alle potenziellen ganzzahligen Lösungen im zulässigen Bereich unberührt[cite: 174]."
+  },
+  {
+    "id": 91,
+    "thema": "Zufallszahlen",
+    "frage": "Warum reichen lineare Kongruenzgeneratoren (LCG) heute oft nicht mehr aus und wie baut man moderne Generatoren?",
+    "musterloesung": "Ein moderner Rechner verbraucht die Periode eines simplen LCGs extrem schnell (was zur Wiederholung führt), und LCG-Zufallszahlen liegen im mehrdimensionalen Raum auf wenigen Hyperebenen (schlechte Gitterstruktur)[cite: 175]. Moderne Generatoren kombinieren entweder mehrere LCGs (L'Ecuyer) oder nutzen Linear Feedback Shift Register und Bit-Rekurrenzen (z. B. der Mersenne-Twister mit einer extremen Periode von 2^19937 - 1)[cite: 175]."
+  },
+  {
+    "id": 92,
+    "thema": "Zufallszahlen",
+    "frage": "Skizzieren Sie die Verwerfungsmethode (Acceptance-Rejection).",
+    "musterloesung": "Man legt eine leicht zu simulierende Hilfsdichte multipliziert mit einem Faktor alpha als 'Hut' komplett über die gewünschte Zieldichte[cite: 176]. Man zieht einen x-Kandidaten aus der Hilfsdichte und eine zufällige y-Höhe[cite: 176]. Liegt der Punkt unterhalb der Zielkurve, wird der x-Kandidat akzeptiert, andernfalls verworfen und neu gezogen[cite: 176]."
+  },
+  {
+    "id": 93,
+    "thema": "Eingabedatenmodellierung",
+    "frage": "Wie hilft der Variationskoeffizient bei der Auswahl des Verteilungstyps?",
+    "musterloesung": "Er (Standardabweichung / Mittelwert) gibt Auskunft über die Streuung[cite: 176]. Ist der empirische Variationskoeffizient ≈ 1, spricht das stark für eine Exponentialverteilung[cite: 176]. Ist er < 1, wählt man z.B. eine Erlang-k-Verteilung, bei > 1 eine Hyperexponentialverteilung[cite: 176]."
+  },
+  {
+    "id": 94,
+    "thema": "Lineare Optimierung",
+    "frage": "Wie berechnet man beim Rucksackproblem mit Branch-and-Bound die obere und untere Schranke?",
+    "musterloesung": "Für die obere Schranke sortiert man die Gegenstände absteigend nach ihrem Nutzen-Gewichts-Verhältnis und löst das relaxierte LP, indem man den ersten nicht mehr passenden Gegenstand gebrochen (anteilig) in den Rucksack packt[cite: 177]. Die untere Schranke erhält man heuristisch (z. B. durch Auslassen des gebrochenen Gegenstands) oder übernimmt den Wert der bisher besten bekannten ganzzahligen Lösung[cite: 177]."
+  },
+  {
+    "id": 95,
+    "thema": "Optimierung / Scheduling",
+    "frage": "Erläutern Sie die A|B|C-Notation bei Scheduling-Problemen.",
+    "musterloesung": "A steht für die Maschinenkonfiguration (z. B. eine Maschine oder parallele Maschinen)[cite: 178]. B steht für Restriktionen oder Bearbeitungsspezifika (z. B. ob Unterbrechungen erlaubt sind oder ob es Bereitstellungstermine gibt)[cite: 178]. C definiert die Minimierungs-Zielfunktion (z. B. Minimierung der maximalen Verspätung oder des Makespans)[cite: 178]."
+  },
+  {
+    "id": 96,
+    "thema": "Lineare Optimierung",
+    "frage": "Wie modelliert man logische Oder-Bedingungen in einem gemischt-ganzzahligen linearen Programm (MILP)?",
+    "musterloesung": "Mit der Big-M-Methode[cite: 178]. Man führt eine Binärvariable (z. B. d ∈ {0,1}) ein und addiert zu den rechten Seiten der Ungleichungen d*M bzw. (1-d)*M[cite: 178, 179]. Das erzwingt, dass die eine Bedingung streng eingehalten wird, während die andere durch die hinreichend große Konstante M trivialerweise inaktiv geschaltet ist[cite: 178, 179]."
+  },
+  {
+    "id": 97,
+    "thema": "Ergebnisauswertung",
+    "frage": "Was ist das statistische Problem der positiven Autokorrelation in einem langen Simulationslauf, und wie löst man es mit Batch Means?",
+    "musterloesung": "Innerhalb eines einzelnen Laufs sind zeitlich aufeinanderfolgende Beobachtungen (z. B. Wartezeiten) positiv korreliert[cite: 180]. Ignoriert man das, wird die Varianz massiv unterschätzt und die Konfidenzintervalle werden viel zu schmal berechnet[cite: 180, 181]. Batch Means löst das, indem der Lauf in große Gruppen (Batches) unterteilt wird; die Mittelwerte dieser Batches sind dann nahezu unkorreliert und erlauben die korrekte Berechnung von Konfidenzintervallen[cite: 181]."
+  },
+  {
+    "id": 98,
+    "thema": "Optimierung",
+    "frage": "Was ist die Pareto-Front bei mehrkriterieller Optimierung?",
+    "musterloesung": "Bei mehreren konkurrierenden Zielen (z. B. Kosten und Durchsatz) gibt es oft kein absolutes Optimum[cite: 181]. Die Pareto-Front besteht aus allen 'nicht-dominierten' Lösungen, also Lösungen, bei denen man sich in keinem Zielkriterium mehr verbessern kann, ohne sich gleichzeitig in mindestens einem anderen Zielkriterium zwingend verschlechtern zu müssen[cite: 181]."
+  },
+  {
+    "id": 99,
+    "thema": "Dynamische Optimierung",
+    "frage": "Mit welchen drei Algorithmen berechnet man die stationäre optimale Politik bei Markovschen Entscheidungsprozessen (MDPs)?",
+    "musterloesung": "Man nutzt die Werteiteration (schnelle, rekursive Approximation), die Politikiteration (exakte Konvergenz in zwei Phasen: Wertbestimmung und Politikverbesserung) oder formuliert das Problem direkt als Lineares Programm (Simplexalgorithmus)[cite: 183]."
+  },
+  {
+    "id": 100,
+    "thema": "Dynamische Optimierung",
+    "frage": "Wie modelliert man das 'Optimale Stoppen' in der Bellmanschen Gleichung?",
+    "musterloesung": "Man erweitert den Zustandsraum um einen absorbierenden Stoppzustand 0[cite: 183]. In jedem regulären Zustand i wählt man zwischen Stoppen (einmalige Erlöse kassieren und in den Zustand 0 wechseln) und Weitermachen (Wartekosten zahlen und regulären Übergang vollziehen)[cite: 183, 184]. Die Bellman-Gleichung entscheidet sich dann immer für das Minimum (bzw. Maximum) aus den Stopp-Kosten und den erwarteten Weitermach-Kosten[cite: 184]."
+  }
+]
