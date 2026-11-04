@@ -15,10 +15,12 @@ __pycache__/
 *$py.class
 *.pyd
 
-# Temporary Audio Files
+# Temporary Audio Files & Generated Reports
 temp_voice.mp3
 *.mp3
 *.wav
+protokolle/
+pruefungsprotokoll_*.md
 
 # IDEs & Editors
 .vscode/

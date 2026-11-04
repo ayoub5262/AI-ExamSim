@@ -12,7 +12,10 @@ from dotenv import load_dotenv
 from openai import OpenAI
 import speech_recognition as sr
 
-# Optional TTS Backends: edge-tts (bevorzugt) oder pyttsx3 (lokaler Fallback)
+# Suppress Pygame welcome message
+os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "1"
+
+# Optional TTS backends: edge-tts (preferred) or pyttsx3 (local fallback)
 try:
     import edge_tts
     import pygame
@@ -24,7 +27,7 @@ try:
     import pyttsx3
     pyttsx_engine = pyttsx3.init()
     pyttsx_engine.setProperty('rate', 170)
-    # Nach einer deutschen Stimme suchen falls vorhanden
+    # Search for an installed German voice if available
     for v in pyttsx_engine.getProperty('voices'):
         if any(lang in v.languages for lang in ['de', 'de-DE', 'de_DE']) or 'german' in v.name.lower() or 'hedda' in v.name.lower() or 'katja' in v.name.lower():
             pyttsx_engine.setProperty('voice', v.id)
@@ -32,14 +35,16 @@ try:
 except Exception:
     pyttsx_engine = None
 
-# 1. API-Konfiguration laden
+# 1. Load API configuration
 load_dotenv()
 API_KEY = os.getenv("API_KEY")
 BASE_URL = os.getenv("BASE_URL", "https://chat.kiconnect.nrw/api/v1")
 MODEL_NAME = os.getenv("MODEL_NAME", "qwen3.8-27b")
+VOICE_NAME = os.getenv("VOICE_NAME", "de-DE-KillianNeural")
 
 if not API_KEY:
-    print("Kein API_KEY in .env")
+    print("[Fehler] Kein API_KEY in .env gefunden. Bitte konfigurieren Sie Ihren API_KEY in der .env-Datei.")
+    sys.exit(1)
 
 client = OpenAI(
     api_key=API_KEY,
@@ -47,32 +52,43 @@ client = OpenAI(
 )
 
 recognizer = sr.Recognizer()
+# Allow thinking pauses while speaking (default library threshold is only 0.8s, which causes premature cutoffs)
+recognizer.pause_threshold = 3.0
+recognizer.non_speaking_duration = 2.0
 
 # ---------------------------------------------------------------------------
-# Sprachausgabe (TTS)
+# Text-to-Speech (TTS)
 # ---------------------------------------------------------------------------
-async def _speak_edge(text: str, voice: str = "de-DE-ConradNeural"):
-    """Erzeugt natürliche deutsche Sprache via edge-tts und spielt sie mit pygame ab."""
+async def _speak_edge(text: str, voice: str = VOICE_NAME):
+    """Generate natural German speech via edge-tts and play it using pygame."""
     communicate = edge_tts.Communicate(text, voice)
     temp_file = Path(__file__).resolve().parent / "temp_voice.mp3"
     await communicate.save(str(temp_file))
 
-    pygame.mixer.init()
-    pygame.mixer.music.load(str(temp_file))
-    pygame.mixer.music.play()
-    while pygame.mixer.music.get_busy():
-        pygame.time.Clock().tick(10)
-    pygame.mixer.quit()
-
-    if temp_file.exists():
+    try:
+        pygame.mixer.init()
+        pygame.mixer.music.load(str(temp_file))
+        pygame.mixer.music.play()
+        while pygame.mixer.music.get_busy():
+            pygame.time.Clock().tick(10)
+    finally:
         try:
-            temp_file.unlink()
+            pygame.mixer.music.unload()
         except Exception:
             pass
+        try:
+            pygame.mixer.quit()
+        except Exception:
+            pass
+        if temp_file.exists():
+            try:
+                temp_file.unlink()
+            except Exception:
+                pass
 
 def speak(text: str, mute: bool = False):
-    """Gibt Prüfer-Aussagen im Terminal aus und spricht sie optional vor."""
-    print(f"\n🎓 Prüfer: {text}")
+    """Print examiner statements in the terminal and optionally speak them aloud."""
+    print(f"\nPrüfer: {text}")
     if mute or not text.strip():
         return
 
@@ -91,49 +107,58 @@ def speak(text: str, mute: bool = False):
             pass
 
 # ---------------------------------------------------------------------------
-# Spracheingabe (STT) & Tastatur-Fallback
+# Speech-to-Text (STT) & Keyboard Fallback
 # ---------------------------------------------------------------------------
 def listen_microphone() -> str | None:
-    """Nimmt Sprache über das Mikrofon auf und transkribiert sie via Google STT."""
+    """Capture speech via microphone and transcribe using Google STT."""
     try:
         with sr.Microphone() as source:
-            print("\n🎙️ [Mikrofon aktiv] Bitte sprechen (max. 30 Sekunden Aufnahme)...")
-            recognizer.adjust_for_ambient_noise(source, duration=0.6)
+            print("\n[Mikrofon aktiv] Bitte sprechen (Denkpausen bis zu 3 Sekunden erlaubt, max. 3 Minuten)...")
+            recognizer.adjust_for_ambient_noise(source, duration=0.8)
             try:
-                audio = recognizer.listen(source, timeout=8, phrase_time_limit=30)
+                audio = recognizer.listen(source, timeout=30, phrase_time_limit=180)
             except sr.WaitTimeoutError:
-                print("⏱️ Keine Spracheingabe erkannt (Zeitüberschreitung).")
+                print("[Hinweis] Keine Spracheingabe erkannt (Zeitüberschreitung).")
                 return None
 
             try:
                 text = recognizer.recognize_google(audio, language="de-DE")
-                print(f"🗣️ Sie: {text}")
+                print(f"Sie (gesprochen): {text}")
+
+                # Safety net: In case only 1-3 words were captured (e.g. due to an extended thinking pause)
+                if len(text.split()) <= 3:
+                    print("\n[Hinweis] Ihre Aufnahme war sehr kurz. Haben Sie noch nachgedacht?")
+                    extra = input("Möchten Sie etwas ergänzen? [Enter = So absenden / Text tippen zum Ergänzen]: ").strip()
+                    if extra:
+                        text = f"{text} {extra}"
+                        print(f"Vollständige Antwort: {text}")
+
                 return text
             except sr.UnknownValueError:
-                print("⚠️ Das Gesprochene konnte nicht verstanden werden.")
+                print("[Hinweis] Das Gesprochene konnte akustisch nicht verstanden werden.")
                 return None
             except sr.RequestError as e:
-                print(f"⚠️ Netzwerkfehler bei Spracherkennung: {e}")
+                print(f"[Warnung] Netzwerkfehler bei Spracherkennung: {e}")
                 return None
     except Exception as e:
-        print(f"⚠️ Mikrofonfehler: {e}")
+        print(f"[Warnung] Mikrofonfehler: {e}")
         return None
 
 def get_user_answer() -> str | None:
     """
-    Ermöglicht Tastatureingabe oder Umschalten auf Spracheingabe.
-    Drückt der Nutzer einfach Enter, startet die Sprachaufnahme.
+    Allow keyboard input or switch to microphone input.
+    If the user presses Enter with empty input, voice recording starts.
     """
-    print("\n" + "-" * 60)
-    print("👉 Ihre Antwort eingeben [Tippen und Enter druecken]")
-    print("   ODER einfach [Enter] druecken, um per Mikrofon zu sprechen:")
+    print("\n" + "-" * 65)
+    print("Ihre Antwort eingeben [Tippen und Enter drücken]")
+    print("ODER einfach [Enter] drücken, um per Mikrofon zu sprechen:")
     typed = input("Antwort: ").strip()
 
     if typed:
-        print(f"⌨️ Sie (getippt): {typed}")
+        print(f"Sie (getippt): {typed}")
         return typed
 
-    # Enter gedrückt -> Mikrofon starten
+    # Enter pressed without text -> start microphone
     spoken = listen_microphone()
     if not spoken:
         retry_typed = input("Möchten Sie die Antwort stattdessen tippen? [Antwort eingeben / Enter zum Überspringen]: ").strip()
@@ -141,12 +166,12 @@ def get_user_answer() -> str | None:
     return spoken
 
 # ---------------------------------------------------------------------------
-# LLM-Bewertung & Notenskalen
+# LLM Evaluation & Grading Scales
 # ---------------------------------------------------------------------------
-def bewerten(frage: str, musterloesung: str, user_antwort: str) -> dict:
+def bewerten(frage: str, musterloesung: str, user_antwort: str, max_retries: int = 2) -> dict:
     """
-    Sendet Frage, Musterlösung und Studentenantwort an das LLM.
-    Erwartet ein strukturiertes JSON mit Punkten (0-10) und Feedback.
+    Send question, model solution, and student response to the LLM.
+    Expects structured JSON with score (0-10) and feedback.
     """
     system_prompt = (
         "Du bist ein erfahrener, strenger, aber wohlwollender Universitätsprofessor "
@@ -171,48 +196,60 @@ def bewerten(frage: str, musterloesung: str, user_antwort: str) -> dict:
         f"Antwort des Studenten: {user_antwort}"
     )
 
-    try:
-        response = client.chat.completions.create(
-            model=MODEL_NAME,
-            temperature=0.3,
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt}
-            ]
-        )
-        content = response.choices[0].message.content.strip()
+    last_error = None
+    for attempt in range(max_retries):
+        try:
+            response = client.chat.completions.create(
+                model=MODEL_NAME,
+                temperature=0.3,
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt}
+                ]
+            )
+            content = response.choices[0].message.content.strip()
 
-        # JSON aus Markdown-Blöcken extrahieren falls nötig
-        json_match = re.search(r"\{.*\}", content, re.DOTALL)
-        if json_match:
-            data = json.loads(json_match.group(0))
-            return {
-                "punkte": int(data.get("punkte", 5)),
-                "status": str(data.get("status", "Teilweise")),
-                "gesprochenes_feedback": str(data.get("gesprochenes_feedback", "Antwort entgegengenommen.")),
-                "was_fehlt": str(data.get("was_fehlt", "")),
-                "merksatz": str(data.get("merksatz", ""))
-            }
-        else:
-            return {
-                "punkte": 5,
-                "status": "Teilweise",
-                "gesprochenes_feedback": content[:200],
-                "was_fehlt": "Automatisches Parsing nicht möglich.",
-                "merksatz": ""
-            }
-    except Exception as e:
-        print(f"⚠️ Fehler bei der API-Bewertung: {e}")
-        return {
-            "punkte": 0,
-            "status": "Fehler",
-            "gesprochenes_feedback": "Bei der Bewertung ist ein Verbindungsfehler aufgetreten.",
-            "was_fehlt": str(e),
-            "merksatz": ""
-        }
+            # Extract JSON from Markdown code blocks if necessary
+            json_match = re.search(r"\{.*\}", content, re.DOTALL)
+            if json_match:
+                data = json.loads(json_match.group(0))
+                raw_pts = data.get("punkte", 5)
+                try:
+                    pts = max(0, min(10, int(raw_pts)))
+                except (ValueError, TypeError):
+                    pts = 5
+
+                return {
+                    "punkte": pts,
+                    "status": str(data.get("status", "Teilweise")),
+                    "gesprochenes_feedback": str(data.get("gesprochenes_feedback", "Antwort entgegengenommen.")),
+                    "was_fehlt": str(data.get("was_fehlt", "")),
+                    "merksatz": str(data.get("merksatz", ""))
+                }
+            else:
+                return {
+                    "punkte": 5,
+                    "status": "Teilweise",
+                    "gesprochenes_feedback": content[:200],
+                    "was_fehlt": "Automatisches Parsing nicht möglich.",
+                    "merksatz": ""
+                }
+        except Exception as e:
+            last_error = e
+            if attempt < max_retries - 1:
+                time.sleep(1.5)
+
+    print(f"[Warnung] Fehler bei der API-Bewertung: {last_error}")
+    return {
+        "punkte": 0,
+        "status": "Fehler",
+        "gesprochenes_feedback": "Bei der Bewertung ist ein Verbindungsfehler aufgetreten. Diese Frage fließt nicht negativ in Ihre Note ein.",
+        "was_fehlt": f"Technischer Fehler: {last_error}",
+        "merksatz": ""
+    }
 
 def calculate_grade(percentage: float) -> tuple[float, str]:
-    """Berechnet die deutsche Hochschulnote (1.0 bis 5.0) anhand der Prozentpunkte."""
+    """Calculate the German university grade (1.0 to 5.0) based on percentage."""
     if percentage >= 95:
         return 1.0, "Sehr gut (1,0)"
     elif percentage >= 90:
@@ -236,34 +273,41 @@ def calculate_grade(percentage: float) -> tuple[float, str]:
     else:
         return 5.0, "Nicht bestanden (5,0)"
 
+def compute_exam_metrics(results: list[dict]) -> tuple[int, int, float, float, str]:
+    """Calculate total score, max score (excluding API errors), percentage, and final grade."""
+    valid_results = [r for r in results if r.get("status") != "Fehler"]
+    total_points = sum(r["punkte"] for r in valid_results)
+    max_points = len(valid_results) * 10
+    percentage = (total_points / max_points * 100) if max_points > 0 else 0.0
+    grade, grade_label = calculate_grade(percentage)
+    return total_points, max_points, percentage, grade, grade_label
+
 # ---------------------------------------------------------------------------
-# Fragen laden & Modusauswahl
+# Question Loading & Mode Selection
 # ---------------------------------------------------------------------------
 def load_questions() -> list[dict]:
-    """Lädt die Fragen aus exam_questions.json mit absolutem Pfad."""
+    """Load questions from exam_questions.json using an absolute path."""
     base_dir = Path(__file__).resolve().parent
     file_path = base_dir / "exam_questions.json"
     if not file_path.exists():
-        # Fallback auf protokoll_com.json falls noch vorhanden
         alt_path = base_dir / "protokoll_com.json"
         if alt_path.exists():
             file_path = alt_path
         else:
-            raise FileNotFoundError(f"Weder exam_questions.json noch protokoll_com.json in {base_dir} gefunden.")
+            raise FileNotFoundError(f"Neither exam_questions.json nor protokoll_com.json found in {base_dir}.")
 
     with open(file_path, "r", encoding="utf-8") as f:
         return json.load(f)
 
 def select_questions(fragen: list[dict]) -> tuple[list[dict], str]:
-    """Interaktives Menü zur Auswahl des Prüfungsmodus."""
-    # Themen gruppieren
+    """Interactive menu for selecting the exam mode."""
     topics: dict[str, list[dict]] = {}
     for q in fragen:
         t = q.get("thema", "Allgemein")
         topics.setdefault(t, []).append(q)
 
     print("\n" + "=" * 65)
-    print("🎓 KI-ExamSim: Mündliche Prüfungssimulation (Simulation & Optimierung)")
+    print("KI-ExamSim: Mündliche Prüfungssimulation (Modellgestützte Analyse und Optimierung)")
     print("=" * 65)
     print("Verfügbare Modi:")
     print("  [1] Realistische Prüfungssimulation (Zufällige Fragen aus diversen Themen)")
@@ -279,7 +323,7 @@ def select_questions(fragen: list[dict]) -> tuple[list[dict], str]:
         count_input = input(f"Wie viele Fragen sollen geprüft werden? [Standard: {default_count}]: ").strip()
         count = int(count_input) if count_input.isdigit() and int(count_input) > 0 else default_count
 
-        # Versuche Fragen aus verschiedenen Themen gleichmäßig zu ziehen
+        # Distribute questions evenly across different topics
         shuffled_topics = list(topics.keys())
         random.shuffle(shuffled_topics)
         selected = []
@@ -326,23 +370,21 @@ def select_questions(fragen: list[dict]) -> tuple[list[dict], str]:
         sys.exit(0)
 
 # ---------------------------------------------------------------------------
-# Prüfungsbericht (Report & Transcript)
+# Exam Report & Transcript
 # ---------------------------------------------------------------------------
 def generate_exam_report(results: list[dict], mode_name: str) -> Path:
-    """Erstellt ein detailliertes Markdown-Prüfungsprotokoll und speichert es ab."""
+    """Generate a detailed Markdown exam transcript in the 'protokolle/' folder."""
     now = datetime.datetime.now()
     timestamp_str = now.strftime("%Y%m%d_%H%M%S")
     date_display = now.strftime("%d.%m.%Y %H:%M:%S")
 
-    total_points = sum(r["punkte"] for r in results)
-    max_points = len(results) * 10
-    percentage = (total_points / max_points * 100) if max_points > 0 else 0
-    grade, grade_label = calculate_grade(percentage)
+    total_points, max_points, percentage, grade, grade_label = compute_exam_metrics(results)
 
-    # Themenanalyse
+    # Topic breakdown (valid evaluations only)
     topic_scores: dict[str, list[int]] = {}
     for r in results:
-        topic_scores.setdefault(r["thema"], []).append(r["punkte"])
+        if r.get("status") != "Fehler":
+            topic_scores.setdefault(r["thema"], []).append(r["punkte"])
 
     strengths = []
     weaknesses = []
@@ -353,25 +395,27 @@ def generate_exam_report(results: list[dict], mode_name: str) -> Path:
         elif avg <= 5.0:
             weaknesses.append(f"{t_name} ({avg:.1f}/10)")
 
-    # Report schreiben
+    # Ensure 'protokolle' directory exists and write report
+    reports_dir = Path(__file__).resolve().parent / "protokolle"
+    reports_dir.mkdir(parents=True, exist_ok=True)
     report_filename = f"pruefungsprotokoll_{timestamp_str}.md"
-    report_path = Path(__file__).resolve().parent / report_filename
+    report_path = reports_dir / report_filename
 
     md_lines = [
-        f"# 📋 Mündliches Prüfungsprotokoll: {grade_label}",
+        f"# Mündliches Prüfungsprotokoll: {grade_label}",
         f"**Datum & Uhrzeit:** {date_display}  ",
         f"**Prüfungsmodus:** {mode_name}  ",
         f"**Gesamtergebnis:** {total_points} von {max_points} Punkten ({percentage:.1f}%)  ",
         f"**Endnote:** **{grade_label}**  ",
         "",
         "---",
-        "## 📊 Zusammenfassung & Feedback",
-        f"- **Status:** {'✅ Bestanden' if grade <= 4.0 else '❌ Nicht bestanden'}",
+        "## Zusammenfassung & Feedback",
+        f"- **Status:** {'Bestanden' if grade <= 4.0 else 'Nicht bestanden'}",
         f"- **Besondere Stärken:** {', '.join(strengths) if strengths else 'Keine eindeutigen Schwerpunkte'}",
         f"- **Bereiche mit Nachholbedarf:** {', '.join(weaknesses) if weaknesses else 'Keine gravierenden Schwächen'}",
         "",
         "---",
-        "## 📝 Detaillierter Fragenverlauf",
+        "## Detaillierter Fragenverlauf",
         ""
     ]
 
@@ -393,42 +437,50 @@ def generate_exam_report(results: list[dict], mode_name: str) -> Path:
     return report_path
 
 def print_summary_card(results: list[dict], mode_name: str, report_path: Path):
-    """Gibt eine übersichtliche Ergebniskarte im Terminal aus."""
-    total_points = sum(r["punkte"] for r in results)
-    max_points = len(results) * 10
-    percentage = (total_points / max_points * 100) if max_points > 0 else 0
-    grade, grade_label = calculate_grade(percentage)
+    """Print an exam summary card in the terminal."""
+    total_points, max_points, percentage, grade, grade_label = compute_exam_metrics(results)
 
     print("\n" + "=" * 65)
-    print("               🏁 PRÜFUNGSERGEBNIS - ZUSAMMENFASSUNG               ")
+    print("               PRÜFUNGSERGEBNIS - ZUSAMMENFASSUNG                ")
     print("=" * 65)
     print(f" Modus:           {mode_name}")
     print(f" Geprüfte Fragen: {len(results)}")
     print(f" Gesamtpunkte:    {total_points} / {max_points} ({percentage:.1f}%)")
     print(f" Endnote:         {grade_label}")
-    print(f" Status:          {'✅ BESTANDEN' if grade <= 4.0 else '❌ NICHT BESTANDEN'}")
+    print(f" Status:          {'BESTANDEN' if grade <= 4.0 else 'NICHT BESTANDEN'}")
     print("-" * 65)
     print(" Detaillierte Punkteübersicht:")
     for idx, r in enumerate(results, 1):
-        status_icon = "🟢" if r["punkte"] >= 7 else ("🟡" if r["punkte"] >= 5 else "🔴")
-        print(f"   Frage {idx:02d} [{r['thema']:<25}]: {r['punkte']:2d}/10 Pkt {status_icon}")
+        if r.get("status") == "Fehler":
+            status_tag = "[FEHLER]"
+        elif r["punkte"] >= 7:
+            status_tag = "[GUT]"
+        elif r["punkte"] >= 5:
+            status_tag = "[OK]"
+        else:
+            status_tag = "[LÜCKE]"
+        print(f"   Frage {idx:02d} [{r['thema']:<25}]: {r['punkte']:2d}/10 Pkt {status_tag}")
     print("-" * 65)
-    print(f" 📄 Ausführliches Protokoll gespeichert:")
-    print(f"    {report_path.name}")
+    print(" Ausführliches Protokoll gespeichert unter:")
+    print(f"   protokolle/{report_path.name}")
     print("=" * 65 + "\n")
 
 # ---------------------------------------------------------------------------
-# Hauptprogramm (Prüfungs-Loop)
+# Main Program (Exam Loop)
 # ---------------------------------------------------------------------------
 def main():
     try:
         fragen = load_questions()
     except Exception as e:
-        print(f"❌ Fehler beim Laden der Fragen: {e}")
+        print(f"[Fehler] Beim Laden der Fragen ist ein Problem aufgetreten: {e}")
         return
 
-    # Prüfungsmodus auswählen
-    selected_questions, mode_name = select_questions(fragen)
+    # Select exam mode
+    try:
+        selected_questions, mode_name = select_questions(fragen)
+    except KeyboardInterrupt:
+        print("\nPrüfung vorzeitig beendet.")
+        return
 
     welcome_msg = (
         "Guten Tag! Willkommen zu Ihrer mündlichen Prüfung im Fach Simulation und Optimierung. "
@@ -440,61 +492,65 @@ def main():
 
     exam_results = []
 
-    for idx, item in enumerate(selected_questions, 1):
-        print(f"\n[{idx}/{len(selected_questions)}] Thema: {item.get('thema', 'Allgemein')}")
-        speak(f"Frage Nummer {idx}: {item['frage']}")
-        time.sleep(0.3)
+    try:
+        for idx, item in enumerate(selected_questions, 1):
+            print(f"\n[{idx}/{len(selected_questions)}] Thema: {item.get('thema', 'Allgemein')}")
+            speak(f"Frage Nummer {idx}: {item['frage']}")
+            time.sleep(0.3)
 
-        user_antwort = get_user_answer()
+            user_antwort = get_user_answer()
 
-        if not user_antwort or not user_antwort.strip():
-            speak("Da keine Antwort vorliegt, bewerte ich diese Frage mit 0 Punkten und gehe zur nächsten über.")
+            if not user_antwort or not user_antwort.strip():
+                speak("Da keine Antwort vorliegt, bewerte ich diese Frage mit 0 Punkten und gehe zur nächsten über.")
+                exam_results.append({
+                    "id": item.get("id", idx),
+                    "thema": item.get("thema", "Allgemein"),
+                    "frage": item["frage"],
+                    "musterloesung": item["musterloesung"],
+                    "user_antwort": "",
+                    "punkte": 0,
+                    "status": "Nicht beantwortet",
+                    "gesprochenes_feedback": "Keine Antwort gegeben.",
+                    "was_fehlt": "Keine Antwort gegeben.",
+                    "merksatz": "Mut zur Lücke, aber in der Prüfung immer versuchen etwas Relevantes zu sagen."
+                })
+                continue
+
+            print("\n[Info] Der Prüfer überlegt und bewertet Ihre Antwort...")
+            evaluation = bewerten(item["frage"], item["musterloesung"], user_antwort)
+
+            # Speak examiner feedback
+            feedback_speech = evaluation.get("gesprochenes_feedback", "Danke für Ihre Ausführung.")
+            speak(feedback_speech)
+
+            # Record result
             exam_results.append({
                 "id": item.get("id", idx),
                 "thema": item.get("thema", "Allgemein"),
                 "frage": item["frage"],
                 "musterloesung": item["musterloesung"],
-                "user_antwort": "",
-                "punkte": 0,
-                "status": "Nicht beantwortet",
-                "gesprochenes_feedback": "Keine Antwort gegeben.",
-                "was_fehlt": "Keine Antwort gegeben.",
-                "merksatz": "Mut zur Lücke, aber in der Prüfung immer versuchen etwas Relevantes zu sagen."
+                "user_antwort": user_antwort,
+                "punkte": evaluation.get("punkte", 5),
+                "status": evaluation.get("status", "Teilweise"),
+                "gesprochenes_feedback": feedback_speech,
+                "was_fehlt": evaluation.get("was_fehlt", ""),
+                "merksatz": evaluation.get("merksatz", "")
             })
-            continue
 
-        print("\n⏳ Der Prüfer überlegt und bewertet Ihre Antwort...")
-        evaluation = bewerten(item["frage"], item["musterloesung"], user_antwort)
+            time.sleep(0.5)
+    except KeyboardInterrupt:
+        print("\n\n[Hinweis] Prüfung durch Benutzer vorzeitig abgebrochen.")
+        if not exam_results:
+            print("Es wurden noch keine Fragen beantwortet. Es wird kein Protokoll erstellt.")
+            return
+        print("Bisherige Antworten werden ausgewertet und gespeichert...")
 
-        # Prüfer-Feedback vorlesen
-        feedback_speech = evaluation.get("gesprochenes_feedback", "Danke für Ihre Ausführung.")
-        speak(feedback_speech)
-
-        # Ergebnis erfassen
-        exam_results.append({
-            "id": item.get("id", idx),
-            "thema": item.get("thema", "Allgemein"),
-            "frage": item["frage"],
-            "musterloesung": item["musterloesung"],
-            "user_antwort": user_antwort,
-            "punkte": evaluation.get("punkte", 5),
-            "status": evaluation.get("status", "Teilweise"),
-            "gesprochenes_feedback": feedback_speech,
-            "was_fehlt": evaluation.get("was_fehlt", ""),
-            "merksatz": evaluation.get("merksatz", "")
-        })
-
-        time.sleep(0.5)
-
-    # Abschlussbericht & Benotung
+    # Final report & grading
     report_path = generate_exam_report(exam_results, mode_name)
     print_summary_card(exam_results, mode_name, report_path)
 
-    # Abschlussworte des Prüfers
-    total_pts = sum(r["punkte"] for r in exam_results)
-    max_pts = len(exam_results) * 10
-    pct = (total_pts / max_pts * 100) if max_pts > 0 else 0
-    grade, grade_label = calculate_grade(pct)
+    # Examiner closing remarks
+    _, _, _, grade, grade_label = compute_exam_metrics(exam_results)
 
     if grade <= 2.3:
         closing = f"Herzlichen Glückwunsch! Sie haben die Prüfung mit der hervorragenden Note {grade_label} bestanden. Sehr gute Leistung!"

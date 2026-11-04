@@ -1,117 +1,125 @@
-# AI-ExamSim: Mündliche Prüfungssimulation
+# AI-ExamSim: Oral Examination Simulator
 
-**AI-ExamSim** ist ein interaktiver, sprach- und textgesteuerter Prüfungssimulator für Studierende zur Vorbereitung auf mündliche Hochschulprüfungen im Fach **Simulation und Optimierung** (Informatik / Operations Research).
+**AI-ExamSim** is an interactive, voice- and text-driven exam simulator designed for university students preparing for oral exams in **Model-based analysis and optimization** (Computer Science).
 
-Das System simuliert eine realistische Prüfungssituation mit einem Universitätsprofessor: Es stellt Fragen, hört auf die gesprochenen oder getippten Antworten des Studierenden, bewertet diese anhand von Musterlösungen mit einem modernen Sprachmodell (LLM) und vergibt eine offizielle Hochschulnote (1,0 bis 5,0) inklusive ausführlichem Prüfungsprotokoll.
-
----
-
-## Hauptfunktionen (Features)
-
-1. **Hybride Sprache- und Tastatureingabe (Keyboard Fallback):**
-   * Antwort direkt über die Tastatur eingeben oder einfach `[Enter]` drücken, um die Spracheingabe per Mikrofon zu starten.
-   * Timeout-geschützt (max. 30 Sekunden pro Antwort) mit automatischem Fallback bei Mikrofonproblemen oder komplexen Fachbegriffen.
-
-2. **Hochwertige Sprachausgabe (Neural TTS):**
-   * Verwendet **`edge-tts`** mit der natürlichen deutschen Stimme `de-DE-ConradNeural` für eine authentische Prüfer-Akustik.
-   * Automatischer Fallback auf lokales `pyttsx3`, falls keine Internetverbindung für TTS besteht.
-
-3. **Drei Prüfungsmodi:**
-   * **[1] Realistische Prüfungssimulation:** Zieht $N$ zufällige Fragen gleichmäßig aus verschiedenen Themengebieten für einen repräsentativen Test.
-   * **[2] Themen-Training:** Gezieltes Üben einzelner Themen (z. B. *Ereignisdiskrete Simulation*, *Eingabedatenmodellierung*, *Nichtlineare Optimierung*).
-   * **[3] Schnelldurchlauf:** Konsekutives Abfragen der ersten $N$ Fragen.
-
-4. **Strukturierte KI-Bewertung und Feedback:**
-   * Anbindung an **KI:Connect NRW** (oder OpenAI) mit Modellen wie `qwen3.8-27b`.
-   * Pro Frage werden erfasst:
-     * **0 bis 10 Punkte**
-     * **Status:** Bestanden / Teilweise / Nicht bestanden
-     * **Gesprochenes Prüfer-Feedback:** Prägnante Rückmeldung (max. 2–3 Sätze)
-     * **Fehlende Aspekte:** Was fehlte zur vollständigen Musterlösung?
-     * **Merksatz:** Wichtigste Kernaussage für die Wiederholung.
-
-5. **Prüfungsabschluss und Benotung:**
-   * Berechnung der deutschen Hochschulnote nach universitärem Punkteschlüssel (1,0 bis 5,0).
-   * Automatische Erstellung eines Markdown-Prüfungsprotokolls (`pruefungsprotokoll_YYYYMMDD_HHMMSS.md`) mit Stärken, Schwachstellen und vollständigem Fragenverlauf.
+The system simulates a realistic oral exam with a university professor: it poses questions, listens to spoken or typed student answers, evaluates responses against curated reference solutions using a large language model (LLM), and assigns an official German university grade (1.0 to 5.0) alongside a comprehensive examination transcript.
 
 ---
 
-## Projektstruktur
+## Core Features
+
+1. **Hybrid Voice and Keyboard Input (Keyboard Fallback):**
+   * Type answers directly into the console or press `[Enter]` on an empty prompt to trigger microphone recording.
+   * Thinking-pause tolerant (up to 3 seconds of pause allowed mid-sentence) with up to 3 minutes of recording time and automatic fallback to keyboard if microphone issues occur.
+
+2. **High-Quality Neural Speech Synthesis (TTS):**
+   * Powered by **`edge-tts`** using natural German neural voices (default: `de-DE-KillianNeural`, configurable via `VOICE_NAME` in `.env`).
+   * Automatic fallback to local `pyttsx3` or terminal output when offline.
+
+3. **Three Examination Modes:**
+   * **[1] Realistic Exam Simulation:** Samples $N$ random questions balanced evenly across diverse topic areas for a representative exam.
+   * **[2] Topic-Specific Training:** Focus on a single topic (e.g., *Discrete Event Simulation*, *Input Data Modeling*, *Nonlinear Optimization*).
+   * **[3] Quick Run:** Sequential walk-through of the first $N$ questions.
+
+4. **Structured AI Evaluation and Feedback:**
+   * Connects to **KI:Connect NRW** (or any OpenAI-compatible API) using models such as `qwen3.8-27b`.
+   * For every question, the evaluator outputs:
+     * **Score:** 0 to 10 points
+     * **Status:** Passed / Partial / Failed
+     * **Spoken Feedback:** Concise remarks addressed directly to the student (max. 2–3 sentences)
+     * **Missing Concepts:** Concrete gaps compared to the reference solution
+     * **Takeaway Note (Merksatz):** A memorable summary point for review
+
+5. **Official University Grading and Transcripts:**
+   * Computes the final German university grade based on the standard university percentage scale (1.0 to 5.0).
+   * Automatically generates a detailed Markdown exam transcript (`protokolle/pruefungsprotokoll_YYYYMMDD_HHMMSS.md`) with strengths, weaknesses, and a full question-by-question breakdown.
+
+---
+
+## Project Structure
 
 ```
 AI-ExamSim/
 │
-├── prof_agent.py              # Hauptprogramm mit Prüfungs-Loop und Logik
-├── exam_questions.json        # Fragenkatalog (100 Fragen mit Themen & Musterlösungen)
-├── requirements.txt           # Python-Abhängigkeiten
-├── .env                       # API-Schlüssel und Konfiguration (lokal)
-├── .gitignore                 # Ausgeschlossene Dateien (venv, env, cache)
-└── README.md                  # Projektdokumentation
+├── prof_agent.py              # Main exam loop and application logic
+├── exam_questions.json        # Question bank (100 questions with topics & reference solutions)
+├── protokolle/                # Automatically generated exam transcripts (Markdown)
+├── requirements.txt           # Python package dependencies
+├── .env                       # Local API keys and environment configuration
+├── .env.example               # Template for environment variables
+├── .gitignore                 # Ignored files (venv, env, cache, protokolle)
+└── README.md                  # Project documentation
 ```
 
 ---
 
-## Installation und Einrichtung
+## Installation and Setup
 
-### 1. Repository vorbereiten und virtuelle Umgebung aktivieren
+### 1. Activate the Virtual Environment
 ```powershell
-# Virtuelle Umgebung aktivieren (Windows PowerShell)
+# In Windows PowerShell
 .\.venv\Scripts\Activate.ps1
 ```
 
-### 2. Abhängigkeiten installieren
+### 2. Install Dependencies
 ```powershell
 pip install -r requirements.txt
 ```
 
-### 3. Umgebungsvariablen konfigurieren
+### 3. Configure Environment Variables
+Copy the template `.env.example` to `.env`:
+```powershell
+Copy-Item .env.example .env
+```
+Set your credentials in `.env`:
 ```ini
-API_KEY=
-BASE_URL=
-MODEL_NAME=
+API_KEY=your_api_key_here
+BASE_URL=https://chat.kiconnect.nrw/api/v1
+MODEL_NAME=qwen3.8-27b
+VOICE_NAME=de-DE-KillianNeural
 ```
 
 ---
 
-## Verwendung
+## Usage
 
-Starten Sie die Prüfungssimulation mit folgendem Befehl:
+Start the examination simulator with:
 
 ```powershell
 python prof_agent.py
 ```
 
-### Ablauf der Simulation:
-1. **Modus wählen:** Wählen Sie zwischen realistischer Prüfung, Themen-Training oder Schnelldurchlauf.
-2. **Frage anhören / lesen:** Der Prüfer stellt die Frage sowohl akustisch als auch im Terminal.
-3. **Antworten:**
-   * **Tippen:** Geben Sie Ihre Antwort direkt ein und drücken Sie `Enter`.
-   * **Sprechen:** Drücken Sie direkt `Enter` mit leerem Textfeld, um das Mikrofon zu aktivieren.
-4. **Feedback:** Der Prüfer bewertet Ihre Antwort direkt und nennt Ihnen fehlende Aspekte.
-5. **Ergebnis:** Am Ende erhalten Sie Ihre Gesamtnote, eine Stärken- und Schwächen-Analyse sowie ein gespeichertes Prüfungsprotokoll im Markdown-Format.
+### Simulation Flow:
+1. **Select Mode:** Choose between realistic simulation, topic-specific training, or quick run.
+2. **Review Question:** The examiner reads the question aloud and prints it to the terminal.
+3. **Submit Answer:**
+   * **Typing:** Enter your response directly and press `Enter`.
+   * **Speaking:** Press `Enter` on an empty line to start microphone recording.
+4. **Immediate Feedback:** The examiner evaluates your response, gives verbal feedback, and notes missing points.
+5. **Final Evaluation:** At the end of the session, review your final grade, a breakdown of strengths and weaknesses, and access the generated transcript file in `protokolle/`.
 
 ---
 
-## Notenschlüssel
+## Grading Scale (German University System)
 
-| Prozent | Note | Bewertung |
+| Percentage | Grade | Classification |
 | :--- | :--- | :--- |
-| $\ge 95\%$ | **1,0** | Sehr gut |
-| $\ge 90\%$ | **1,3** | Sehr gut |
-| $\ge 85\%$ | **1,7** | Gut |
-| $\ge 80\%$ | **2,0** | Gut |
-| $\ge 75\%$ | **2,3** | Gut |
-| $\ge 70\%$ | **2,7** | Befriedigend |
-| $\ge 65\%$ | **3,0** | Befriedigend |
-| $\ge 60\%$ | **3,3** | Befriedigend |
-| $\ge 55\%$ | **3,7** | Ausreichend |
-| $\ge 50\%$ | **4,0** | Ausreichend |
-| $< 50\%$ | **5,0** | Nicht bestanden |
+| $\ge 95\%$ | **1.0** | Very Good (Sehr gut) |
+| $\ge 90\%$ | **1.3** | Very Good (Sehr gut) |
+| $\ge 85\%$ | **1.7** | Good (Gut) |
+| $\ge 80\%$ | **2.0** | Good (Gut) |
+| $\ge 75\%$ | **2.3** | Good (Gut) |
+| $\ge 70\%$ | **2.7** | Satisfactory (Befriedigend) |
+| $\ge 65\%$ | **3.0** | Satisfactory (Befriedigend) |
+| $\ge 60\%$ | **3.3** | Satisfactory (Befriedigend) |
+| $\ge 55\%$ | **3.7** | Sufficient (Ausreichend) |
+| $\ge 50\%$ | **4.0** | Sufficient (Ausreichend) |
+| $< 50\%$ | **5.0** | Failed (Nicht bestanden) |
 
 ---
 
-## Lizenz und Datenschutz
+## License and Privacy
 
-* Konzipiert für akademische Lernzwecke.
-* Fragen und Musterlösungen basieren auf Prüfungsprotokollen des Fachs Simulation & Optimierung.
-* Bei Verwendung von KI:Connect NRW verbleiben die Daten im geschützten akademischen Netzwerksystem.
+* Intended for academic training and learning purposes.
+* Question pool and reference solutions are based on exam protocols from Simulation and Optimization courses.
+* When using KI:Connect NRW, data processing stays within the secured academic network.
